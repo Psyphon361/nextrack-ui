@@ -494,7 +494,7 @@ export default function RequestsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <Navigation />
       <main className="container mx-auto px-4 py-8">
         <Toaster 
@@ -507,56 +507,59 @@ export default function RequestsPage() {
             },
           }}
         />
-        <h1 className="text-4xl font-bold mb-8 text-center text-white">Purchase Requests</h1>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            Purchase Requests
+          </h1>
+        </div>
         
-        {/* Status filter */}
-        <div className="flex justify-center mb-8 space-x-4">
+        <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setStatusFilter(undefined)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === undefined
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             All
           </button>
           <button
             onClick={() => setStatusFilter(0)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 0
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Pending
           </button>
           <button
             onClick={() => setStatusFilter(1)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 1
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Approved
           </button>
           <button
             onClick={() => setStatusFilter(2)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 2
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Rejected
           </button>
           <button
             onClick={() => setStatusFilter(3)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 3
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Completed
@@ -579,9 +582,9 @@ export default function RequestsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {displayedRequests.map((request) => (
-              <div
-                key={request.requestId.toString()}
-                className="bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
+              <div 
+                key={request.requestId.toString()} 
+                className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group relative"
               >
                 <div className="space-y-4">
                   <div className="flex justify-between items-start">
@@ -589,7 +592,7 @@ export default function RequestsPage() {
                       <div className="text-gray-400">From</div>
                       <button 
                         onClick={() => {
-                          navigator.clipboard.writeText(request.seller);
+                          navigator.clipboard.writeText(request.buyer);
                           toast.success('Address copied to clipboard');
                         }}
                         className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
@@ -599,7 +602,7 @@ export default function RequestsPage() {
                       <div className="text-gray-400 mt-2">To</div>
                       <button 
                         onClick={() => {
-                          navigator.clipboard.writeText(request.buyer);
+                          navigator.clipboard.writeText(request.seller);
                           toast.success('Address copied to clipboard');
                         }}
                         className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
@@ -631,22 +634,22 @@ export default function RequestsPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
                     <div>
-                      <p className="text-gray-400 text-sm">Quantity</p>
-                      <p className="text-white font-medium">{request.quantity} mUSDT</p>
+                      <p className="text-gray-400 text-sm mb-1">Quantity</p>
+                      <p className="text-white font-semibold text-lg">{request.quantity}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-400 text-sm">Price per Unit</p>
-                      <p className="text-white font-medium">{request.pricePerUnit} mUSDT</p>
+                      <p className="text-gray-400 text-sm mb-1">Price per Unit</p>
+                      <p className="text-white font-semibold text-lg">${request.pricePerUnit}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400 text-sm">Total Amount</p>
-                      <p className="text-white font-medium">{request.totalAmount} mUSDT</p>
+                      <p className="text-gray-400 text-sm mb-1">Total Amount</p>
+                      <p className="text-white font-semibold text-lg">${request.totalAmount}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-400 text-sm">Status</p>
-                      <p className={`font-medium ${
+                      <p className="text-gray-400 text-sm mb-1">Status</p>
+                      <p className={`font-semibold text-lg ${
                         request.status === 0 ? 'text-yellow-400' :
                         request.status === 1 ? 'text-green-400' :
                         request.status === 2 ? 'text-red-400' :
@@ -666,13 +669,13 @@ export default function RequestsPage() {
                           processingTx
                             ? 'bg-gray-600 cursor-not-allowed'
                             : request.seller.toLowerCase() === address?.toLowerCase()
-                              ? 'bg-green-600 hover:bg-green-700'
+                              ? 'bg-gradient-to-r from-emerald-500/50 to-emerald-600/50 hover:from-emerald-500/70 hover:to-emerald-600/70 border border-emerald-500/50 text-emerald-100 hover:text-white'
                               : 'bg-gray-600 cursor-not-allowed'
-                        } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                        } py-2 px-4 rounded-lg font-medium transition-all duration-300 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-emerald-500/70 shadow-md hover:shadow-lg`}
                       >
                         {processingTx === `approve-${request.requestId.toString()}` ? (
                           <span className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-emerald-100 mr-2"></div>
                             Approving...
                           </span>
                         ) : request.seller.toLowerCase() === address?.toLowerCase() ? (
@@ -688,13 +691,13 @@ export default function RequestsPage() {
                           processingTx
                             ? 'bg-gray-600 cursor-not-allowed'
                             : request.seller.toLowerCase() === address?.toLowerCase()
-                              ? 'bg-red-600 hover:bg-red-700'
+                              ? 'bg-gradient-to-r from-rose-500/50 to-rose-600/50 hover:from-rose-500/70 hover:to-rose-600/70 border border-rose-500/50 text-rose-100 hover:text-white'
                               : 'bg-gray-600 cursor-not-allowed'
-                        } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                        } py-2 px-4 rounded-lg font-medium transition-all duration-300 ease-in-out transform hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-rose-500/70 shadow-md hover:shadow-lg`}
                       >
                         {processingTx === `reject-${request.requestId.toString()}` ? (
                           <span className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-rose-100 mr-2"></div>
                             Rejecting...
                           </span>
                         ) : request.seller.toLowerCase() === address?.toLowerCase() ? (

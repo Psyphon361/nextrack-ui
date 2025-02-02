@@ -100,22 +100,22 @@ export default function AppPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <Navigation />
       
-      <main className="container mx-auto px-6 py-12">
+      <main className="container mx-auto px-6 py-12 space-y-16">
         <div className="max-w-6xl mx-auto">
           {/* Hero Section */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-50 rounded-2xl" />
-            <div className="relative bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 md:p-12">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-50 rounded-3xl transition-all duration-300 group-hover:opacity-70" />
+            <div className="relative bg-gray-800/60 backdrop-blur-md rounded-3xl border border-gray-700/50 shadow-2xl overflow-hidden p-10 md:p-14">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="max-w-3xl"
+                className="max-w-3xl space-y-6"
               >
-                <h1 className="text-4xl font-bold mb-4 font-['Space_Grotesk']">
+                <h1 className="text-5xl font-extrabold mb-4 font-['Space_Grotesk'] tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
                   Welcome to NexTrack
                 </h1>
-                <p className="text-xl text-gray-300 mb-8">
+                <p className="text-xl text-gray-300 leading-relaxed mb-8">
                   {isConnected
                     ? isManufacturer
                       ? 'Start managing your products on the blockchain.'
@@ -127,36 +127,48 @@ export default function AppPage() {
                   <button
                     onClick={handleConnect}
                     disabled={isConnecting}
-                    className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-lg text-lg font-medium transition-colors inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative group overflow-hidden px-10 py-4 rounded-2xl text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
                   >
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    
+                    {/* Animated border */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-300"></div>
+                    
                     {isConnecting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                        Connecting...
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3 relative z-10"></div>
+                        <span className="relative z-10">Connecting...</span>
                       </>
                     ) : (
-                      'Connect Wallet'
+                      <span className="relative z-10">Connect Wallet</span>
                     )}
                   </button>
                 ) : (
                   <div className="flex flex-col space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-                    <div className="bg-gray-900/50 rounded-lg px-6 py-4 flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-medium">
-                        {`${address?.slice(0, 6)}...${address?.slice(-4)}`}
-                      </span>
-                      {isManufacturer && (
-                        <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded text-xs font-medium ml-2">
-                          Verified Manufacturer
+                    <div className="relative inline-block group cursor-pointer">
+                      <div className="relative inline-flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-medium bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"></div>
+                        <div className="w-4 h-4 rounded-full bg-green-400 animate-pulse relative z-10 group-hover:scale-110 transition-transform"></div>
+                        <span className="text-sm font-medium tracking-wide relative z-10 group-hover:text-white transition-colors">
+                          {`${address?.slice(0, 6)}...${address?.slice(-4)}`}
                         </span>
-                      )}
+                        {isManufacturer && (
+                          <span className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-blue-500 px-3 py-1 rounded-md text-xs font-bold relative z-10 border border-blue-500/30 group-hover:text-white group-hover:border-white transition-colors">
+                            Verified
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )}
-
+                
                 {error && (
-                  <div className="mt-4 p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-500">
-                    {error}
+                  <div className="mt-4 p-4 bg-red-500/10 border border-red-500 rounded-xl text-red-400 flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{error}</span>
                   </div>
                 )}
               </motion.div>
@@ -169,34 +181,34 @@ export default function AppPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16"
             >
               {statsData.map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-gray-800/30 rounded-xl p-6 backdrop-blur-sm border border-gray-700/50"
+                  className="bg-gray-800/40 rounded-2xl p-8 backdrop-blur-md border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl"
                 >
-                  <div className="text-3xl font-bold text-blue-400 mb-2">{stat.value}</div>
-                  <div className="text-gray-400">{stat.label}</div>
+                  <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">{stat.value}</div>
+                  <div className="text-gray-400 text-lg tracking-wide">{stat.label}</div>
                 </div>
               ))}
             </motion.div>
           )}
 
           {/* Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-16">
             {/* Browse Marketplace */}
             <Link href="/app/marketplace" className="group">
-              <div className="bg-gray-800/50 rounded-xl p-8 h-full border border-gray-700/50 hover:border-blue-500/50 transition-colors flex flex-col justify-center">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+              <div className="bg-gray-800/50 rounded-2xl p-10 h-full border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col justify-center">
+                <div className="flex items-center gap-5 mb-5">
+                  <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 transition-transform group-hover:rotate-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
                       <path d="M2.25 2.25a.75.75 0 000 1.5h1.386c.17 0 .318.114.362.278l2.558 9.592a3.752 3.752 0 00-2.806 3.63c0 .414.336.75.75.75h15.75a.75.75 0 000-1.5H5.378A2.25 2.25 0 017.5 15h11.218a.75.75 0 00.674-.421 60.358 60.358 0 002.96-7.228.75.75 0 00-.525-.965A60.864 60.864 0 005.68 4.509l-.232-.867A1.875 1.875 0 003.636 2.25H2.25zM3.75 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zM16.5 20.25a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-medium">Browse Marketplace</h3>
+                  <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Browse Marketplace</h3>
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-lg leading-relaxed">
                   Explore and purchase verified products directly from manufacturers. Ensure authenticity and track provenance.
                 </p>
               </div>
@@ -204,34 +216,34 @@ export default function AppPage() {
 
             {/* Register Product or My Orders */}
             {isManufacturer ? (
-              <Link href="/app/register" className="group">
-                <div className="bg-gray-800/50 rounded-xl p-8 h-full border border-gray-700/50 hover:border-blue-500/50 transition-colors flex flex-col justify-center">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clipRule="evenodd" />
+              <Link href="/app/register-batch" className="group">
+                <div className="bg-gray-800/50 rounded-2xl p-10 h-full border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col justify-center">
+                  <div className="flex items-center gap-5 mb-5">
+                    <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 transition-transform group-hover:rotate-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-medium">Register Product</h3>
+                    <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Register Product</h3>
                   </div>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-lg leading-relaxed">
                     Register your products on the blockchain. Add details, set pricing, and make them available for purchase.
                   </p>
                 </div>
               </Link>
             ) : (
               <Link href="/app/orders" className="group">
-                <div className="bg-gray-800/50 rounded-xl p-8 h-full border border-gray-700/50 hover:border-blue-500/50 transition-colors flex flex-col justify-center">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <div className="bg-gray-800/50 rounded-2xl p-10 h-full border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col justify-center">
+                  <div className="flex items-center gap-5 mb-5">
+                    <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 transition-transform group-hover:rotate-6">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
                         <path d="M3.375 3C2.339 3 1.5 3.84 1.5 4.875v.75c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875v-.75C22.5 3.839 21.66 3 20.625 3H3.375z" />
-                        <path fillRule="evenodd" d="M3.087 9l.54 9.176A3 3 0 006.62 21h10.757a3 3 0 002.995-2.824L20.913 9H3.087zm6.163 3.75A.75.75 0 0110 12h4a.75.75 0 010 1.5h-4a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M3.087 9l.54 9.176A3 3 0 006.62 21h10.757a3 3 0 002.995-2.824L20.913 9H3.087zm6.163 3.75A.75.75 0 0110 12h4a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75z" />
                       </svg>
                     </div>
-                    <h3 className="text-2xl font-medium">My Orders</h3>
+                    <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">My Orders</h3>
                   </div>
-                  <p className="text-gray-400 text-lg">
+                  <p className="text-gray-400 text-lg leading-relaxed">
                     View and manage your purchase orders. Track status, confirm deliveries, and maintain your order history.
                   </p>
                 </div>
@@ -240,74 +252,42 @@ export default function AppPage() {
 
             {/* My Listings */}
             <Link href="/app/my-batches" className="group">
-              <div className="bg-gray-800/50 rounded-xl p-8 h-full border border-gray-700/50 hover:border-blue-500/50 transition-colors flex flex-col justify-center">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                      <path fillRule="evenodd" d="M7.502 6h7.128A3.375 3.375 0 0118 9.375v9.375a3 3 0 003-3V6.108c0-1.505-1.125-2.811-2.664-2.94a48.972 48.972 0 00-.673-.05A3 3 0 0015 1.5h-1.5a3 3 0 00-2.663 1.618c-.225.015-.45.032-.673.05C8.662 3.295 7.554 4.542 7.502 6zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" clipRule="evenodd" />
-                      <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 20.625V9.375zM6 12a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V12zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 15a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V15zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75zM6 18a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H6.75a.75.75 0 01-.75-.75V18zm2.25 0a.75.75 0 01.75-.75h3.75a.75.75 0 010 1.5H9a.75.75 0 01-.75-.75z" clipRule="evenodd" />
+              <div className="bg-gray-800/50 rounded-2xl p-10 h-full border border-gray-700/50 hover:border-green-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col justify-center">
+                <div className="flex items-center gap-5 mb-5">
+                  <div className="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center text-green-400 transition-transform group-hover:rotate-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                      <path fillRule="evenodd" d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 004.25 22.5h15.5a1.875 1.875 0 001.865-2.071l-1.263-12a1.875 1.875 0 00-1.865-1.679H16.5V6a4.5 4.5 0 10-9 0zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" />
+                      <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 19.125v-9.75zM6.75 9a.75.75 0 01.75-.75h6a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7.5zm0 3a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7.5z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-medium">My Listings</h3>
+                  <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-teal-500">My Listings</h3>
                 </div>
-                <p className="text-gray-400 text-lg">
-                  Manage your product listings, track inventory, and handle customer requests all in one place.
+                <p className="text-gray-400 text-lg leading-relaxed">
+                  View and manage your registered products and batches with full transparency and traceability.
                 </p>
               </div>
             </Link>
 
             {/* Purchase Requests */}
             <Link href="/app/requests" className="group">
-              <div className="bg-gray-800/50 rounded-xl p-8 h-full border border-gray-700/50 hover:border-blue-500/50 transition-colors flex flex-col justify-center">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
-                      <path fillRule="evenodd" d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 004.25 22.5h15.5a1.875 1.875 0 001.865-2.071l-1.263-12a1.875 1.875 0 00-1.865-1.679H16.5V6a4.5 4.5 0 10-9 0zM12 3a3 3 0 00-3 3v.75h6V6a3 3 0 00-3-3zm-3 8.25a3 3 0 106 0v-.75a.75.75 0 011.5 0v.75a4.5 4.5 0 11-9 0v-.75a.75.75 0 011.5 0v.75z" clipRule="evenodd" />
+              <div className="bg-gray-800/50 rounded-2xl p-10 h-full border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex flex-col justify-center">
+                <div className="flex items-center gap-5 mb-5">
+                  <div className="w-14 h-14 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 transition-transform group-hover:rotate-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                      <path fillRule="evenodd" d="M7.5 6v.75H5.513c-.96 0-1.764.724-1.865 1.679l-1.263 12A1.875 1.875 0 004.25 22.5h15.5a1.875 1.875 0 001.865-2.071l-1.263-12a1.875 1.875 0 00-1.865-1.679H16.5V6a4.5 4.5 0 10-9 0zM13.5 3A1.5 1.5 0 0012 4.5h4.5A1.5 1.5 0 0015 3h-1.5z" />
+                      <path fillRule="evenodd" d="M3 9.375C3 8.339 3.84 7.5 4.875 7.5h9.75c1.036 0 1.875.84 1.875 1.875v9.75c0 1.036-.84 1.875-1.875 1.875h-9.75A1.875 1.875 0 013 19.125v-9.75zM6.75 9a.75.75 0 01.75-.75h6a.75.75 0 010 1.5H7.5a.75.75 0 01-.75-.75zm.75 2.25a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7.5zm0 3a.75.75 0 000 1.5h6a.75.75 0 000-1.5H7.5z" />
                     </svg>
                   </div>
-                  <h3 className="text-2xl font-medium">Purchase Requests</h3>
+                  <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500">Purchase Requests</h3>
                 </div>
-                <p className="text-gray-400 text-lg">
+                <p className="text-gray-400 text-lg leading-relaxed">
                   View and manage all your purchase requests. Track order status and transaction history in real-time.
                 </p>
               </div>
             </Link>
           </div>
 
-          {/* Getting Started Guide */}
-          {isConnected && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-              className="mt-12 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl p-8"
-            >
-              <h2 className="text-2xl font-bold mb-6 font-['Space_Grotesk']">Getting Started</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gray-800/50 rounded-xl p-6">
-                  <div className="text-blue-400 text-xl font-bold mb-2">1</div>
-                  <h3 className="font-semibold mb-2">Browse Products</h3>
-                  <p className="text-gray-400 text-sm">
-                    Explore our marketplace to find authentic products from verified manufacturers.
-                  </p>
-                </div>
-                <div className="bg-gray-800/50 rounded-xl p-6">
-                  <div className="text-blue-400 text-xl font-bold mb-2">2</div>
-                  <h3 className="font-semibold mb-2">Verify Authenticity</h3>
-                  <p className="text-gray-400 text-sm">
-                    Check product history and manufacturer verification on the blockchain.
-                  </p>
-                </div>
-                <div className="bg-gray-800/50 rounded-xl p-6">
-                  <div className="text-blue-400 text-xl font-bold mb-2">3</div>
-                  <h3 className="font-semibold mb-2">Make Purchase</h3>
-                  <p className="text-gray-400 text-sm">
-                    Securely purchase products using your connected wallet.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          )}
+          {/* Removed Getting Started section */}
         </div>
       </main>
     </div>

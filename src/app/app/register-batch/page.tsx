@@ -49,7 +49,7 @@ export default function RegisterBatchPage() {
 
       // Convert values to appropriate types
       const quantity = ethers.parseUnits(formData.totalQuantity, 0); // No decimals for quantity
-      const price = ethers.parseUnits(formData.unitPrice, 6); // Convert to wei, 6 decimals for mUSDT
+      const price = ethers.parseUnits(formData.unitPrice, 0); // Convert to wei, 6 decimals for mUSDT
 
       // Register the batch
       const tx = await contract.registerProductBatch(
@@ -152,15 +152,16 @@ export default function RegisterBatchPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
+          transition={{ duration: 0.5 }}
+          className="max-w-4xl mx-auto bg-gray-800/40 rounded-3xl backdrop-blur-md border border-gray-700/50 p-12 shadow-2xl"
         >
-          <h1 className="text-4xl font-bold font-['Space_Grotesk'] mb-8">
+          <h1 className="text-4xl font-bold font-['Space_Grotesk'] mb-8 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
             Register New Product Batch
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-300">
                 Product Name
               </label>
               <input
@@ -168,38 +169,38 @@ export default function RegisterBatchPage() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
                 placeholder="Enter product name"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-300">
                 Description
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[100px]"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none min-h-[120px] transition-all duration-300"
                 placeholder="Enter product description"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-300">
                 Category
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: Number(e.target.value) })}
                 required
-                className="w-full px-4 py-2 bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
               >
                 {Object.entries(ProductCategory)
                   .filter(([key]) => isNaN(Number(key)))
                   .map(([key, value]) => (
-                    <option key={value} value={value}>
+                    <option key={value} value={value} className="bg-gray-800">
                       {key}
                     </option>
                   ))}
@@ -207,7 +208,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-2 text-gray-300">
                 Total Quantity
               </label>
               <input
@@ -216,14 +217,14 @@ export default function RegisterBatchPage() {
                 onChange={(e) => setFormData({ ...formData, totalQuantity: e.target.value })}
                 required
                 min="1"
-                className="w-full px-4 py-2 bg-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
                 placeholder="Enter total quantity"
               />
             </div>
 
             <div>
-              <label htmlFor="unitPrice" className="block text-sm font-medium mb-2">
-                Unit Price (mUSDT)
+              <label htmlFor="unitPrice" className="block text-sm font-medium mb-2 text-gray-300">
+                Unit Price (USD)
               </label>
               <input
                 type="number"
@@ -232,29 +233,30 @@ export default function RegisterBatchPage() {
                 id="unitPrice"
                 value={formData.unitPrice}
                 onChange={(e) => setFormData({ ...formData, unitPrice: e.target.value })}
-                className="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-2"
-                placeholder="Enter unit price in mUSDT"
+                className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300"
+                placeholder="Enter unit price in USD"
                 required
               />
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 pt-4">
               <button
                 type="submit"
                 disabled={isRegistering}
-                className={`flex-1 px-6 py-3 rounded-lg font-medium transition-colors ${
-                  isRegistering
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                className="relative group overflow-hidden flex-1 px-10 py-4 rounded-2xl text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center justify-center"
               >
-                Register Batch
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-300"></div>
+                <span className="relative z-10">
+                  {isRegistering ? 'Registering...' : 'Register Batch'}
+                </span>
               </button>
               <Link
                 href="/app"
-                className="px-8 py-3 border border-gray-600 hover:border-blue-400 rounded-lg font-medium transition-colors text-center"
+                className="relative group overflow-hidden flex-1 px-10 py-4 rounded-2xl text-lg font-semibold border border-gray-700 text-gray-300 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:border-blue-500 inline-flex items-center justify-center"
               >
-                Cancel
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                <span className="relative z-10">Cancel</span>
               </Link>
             </div>
           </form>

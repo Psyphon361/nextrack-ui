@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { motion } from 'framer-motion';
 import { usePublicClient, useWalletClient } from 'wagmi';
 import { Address } from 'viem';
 import { ethers } from 'ethers';
@@ -98,6 +97,31 @@ export default function MarketplacePage() {
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!publicClient) return;
+
+      setIsLoading(true);
+      try {
+        // Get registered manufacturers
+        const manufacturers = await contract.getRegisteredManufacturers();
+        setRegisteredManufacturers(manufacturers);
+        console.log('Registered manufacturers:', manufacturers);
+
+        // Fetch listings
+        await fetchListings();
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to load marketplace data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [publicClient]);
+
   const fetchListings = async () => {
     if (!publicClient) return;
 
@@ -146,10 +170,10 @@ export default function MarketplacePage() {
 
       setListings(batchDetails);
 
-      // Initialize quantities
+      // Initialize quantities to empty string
       const quantities: RequestQuantity = {};
       batchDetails.forEach(listing => {
-        quantities[listing.batchId.toString()] = '1';
+        quantities[listing.batchId.toString()] = '';
       });
       setRequestQuantities(quantities);
 
@@ -171,31 +195,6 @@ export default function MarketplacePage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!publicClient) return;
-
-      setIsLoading(true);
-      try {
-        // Get registered manufacturers
-        const manufacturers = await contract.getRegisteredManufacturers();
-        setRegisteredManufacturers(manufacturers);
-        console.log('Registered manufacturers:', manufacturers);
-
-        // Fetch listings
-        await fetchListings();
-
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        toast.error('Failed to load marketplace data');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [publicClient]);
 
   const fetchUserBalances = async () => {
     if (!walletClient) return;
@@ -443,69 +442,94 @@ export default function MarketplacePage() {
     }
   };
 
-  const handleQuantityChange = (batchId: string, value: string) => {
-    // Allow empty string or valid numbers
-    if (value === '' || Number(value) >= 0) {
-      setRequestQuantities(prev => ({
-        ...prev,
-        [batchId]: value
-      }));
-    }
+  const handleQuantityChange = (listing: ProductListing, e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    const numericValue = inputValue === '' ? '' : Math.min(
+      Number(inputValue), 
+      Number(listing.totalQuantity)
+    ).toString();
+    
+    const newQuantities = { ...requestQuantities };
+    newQuantities[listing.batchId.toString()] = numericValue;
+    setRequestQuantities(newQuantities);
   };
 
   const filteredListings = useMemo(() => {
-    return listings.filter(listing => {
-      if (activeTab === 'verified') {
-        return registeredManufacturers.includes(listing.owner);
-      } else {
-        return !registeredManufacturers.includes(listing.owner);
-      }
-    });
-  }, [listings, activeTab, registeredManufacturers]);
+    return listings
+      .filter(listing => {
+        // Filter by manufacturer type
+        if (activeTab === 'verified') {
+          return registeredManufacturers.includes(listing.owner);
+        } else {
+          return !registeredManufacturers.includes(listing.owner);
+        }
+      })
+      .filter(listing => {
+        // Filter by search query
+        if (!searchQuery) return true;
+        
+        // Convert search query to lowercase for case-insensitive search
+        const query = searchQuery.toLowerCase().trim();
+        
+        // Search across multiple fields
+        return (
+          listing.name.toLowerCase().includes(query) ||
+          listing.description.toLowerCase().includes(query) ||
+          listing.category.toLowerCase().includes(query) ||
+          listing.batchId.toString().includes(query)
+        );
+      });
+  }, [listings, activeTab, registeredManufacturers, searchQuery]);
 
   const renderListing = (listing: ProductListing) => {
     return (
       <div
         key={listing.batchId.toString()}
-        className="bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
+        className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group"
       >
         <div className="space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-bold text-white mb-2">{listing.name}</h3>
-              <p className="text-gray-300 mb-4">{listing.description}</p>
+           <div className="flex justify-between items-start">
+            <div className="flex-grow pr-4">
+              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                {listing.name}
+              </h3>
+              <p className="text-gray-300 text-sm mb-4 line-clamp-2">{listing.description}</p>
             </div>
-            <div>
-              <div className="text-gray-400">Batch ID</div>
+            <div className="text-right">
+              <div className="text-gray-400 text-sm mb-1">Batch ID</div>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(listing.batchId.toString());
                   toast.success('Batch ID copied to clipboard');
                 }}
-                className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
+                className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded hover:bg-blue-600/50 transition-colors"
               >
                 {listing.batchId.toString()}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
             <div>
-              <p className="text-gray-400 text-sm">Price per unit</p>
-              <p className="text-white font-medium">${(Number(listing.unitPrice) / 1e18).toFixed(2)}</p>
+              <p className="text-gray-400 text-sm mb-1">Price per unit</p>
+              <p className="text-white font-semibold text-lg">
+                ${(Number(listing.unitPrice) / 1e18).toFixed(2)}
+              </p>
             </div>
             <div className="text-right">
-              <p className="text-gray-400 text-sm">Available Quantity</p>
-              <p className="text-white font-medium">{listing.totalQuantity.toString()}</p>
+              <p className="text-gray-400 text-sm mb-1">Available Quantity</p>
+              <p className="text-white font-semibold text-lg">
+                {listing.totalQuantity.toString()}
+              </p>
             </div>
-            <div>
-              <p className="text-gray-400 text-sm">Seller</p>
+            <div className="col-span-2 border-t border-gray-700/30 pt-4">
+              <p className="text-gray-400 text-sm mb-1">Seller</p>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(listing.owner.toString());
                   toast.success('Address copied to clipboard');
                 }}
-                className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
+                className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
               >
                 {listing.owner.toString()}
               </button>
@@ -518,29 +542,17 @@ export default function MarketplacePage() {
                 type="number"
                 placeholder="Enter quantity"
                 value={requestQuantities[listing.batchId.toString()] || ''}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  handleQuantityChange(listing.batchId.toString(), value);
-                }}
-                className="flex-1 px-4 py-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                min="1"
-                step="1"
-                onKeyDown={(e) => {
-                  // Prevent decimal point
-                  if (e.key === '.') {
-                    e.preventDefault();
-                  }
-                }}
-                max={Number(listing.totalQuantity)}
+                onChange={(e) => handleQuantityChange(listing, e)}
+                className="flex-1 px-3 py-2 rounded-lg bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
               />
               <button
                 onClick={() => handleRequestProducts(listing)}
                 disabled={!requestQuantities[listing.batchId.toString()] || isRequesting}
-                className={`flex-1 ${
+                className={`flex-1 rounded-lg font-medium transition-all duration-300 py-2 px-4 ${
                   !requestQuantities[listing.batchId.toString()] || isRequesting
                     ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                    : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
+                }`}
               >
                 {isRequesting ? (
                   <span className="flex items-center justify-center">
@@ -553,7 +565,7 @@ export default function MarketplacePage() {
               </button>
             </div>
             {requestQuantities[listing.batchId.toString()] && (
-              <div className="text-right text-gray-400">
+              <div className="text-right text-gray-400 text-sm">
                 Total: ${((Number(listing.unitPrice) / 1e18) * Number(requestQuantities[listing.batchId.toString()])).toFixed(2)}
               </div>
             )}
@@ -564,49 +576,111 @@ export default function MarketplacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+          success: {
+            iconTheme: {
+              primary: '#4ade80',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+          loading: {
+            duration: Infinity,
+          },
+        }}
+      />
       <Navigation />
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <Toaster />
-        <h1 className="text-4xl font-bold mb-8 text-center text-white">Marketplace</h1>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            Marketplace
+          </h1>
+          {walletClient && (
+            <div className="flex items-center space-x-4 bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl px-5 py-2.5 shadow-md border border-gray-700/30">
+              <span className="text-gray-300 font-medium text-sm tracking-wider">
+                Balances:
+              </span>
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-white font-semibold">
+                    {Number(userBalances.mUSDT).toLocaleString()}
+                  </span>
+                  <span className="text-gray-400 text-sm">mUSDT</span>
+                </div>
+                <div className="h-4 w-px bg-gray-600"></div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-white font-semibold">
+                    {Number(userBalances.ETN).toLocaleString()}
+                  </span>
+                  <span className="text-gray-400 text-sm">ETN</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="relative w-full md:w-96 mt-4 md:mt-0">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search products..."
+              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 pl-10"
+            />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+        </div>
 
-        <div className="flex justify-center mb-8 space-x-4">
+        <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setActiveTab('verified')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               activeTab === 'verified'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Verified Manufacturers
           </button>
           <button
             onClick={() => setActiveTab('other')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               activeTab === 'other'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Other Sellers
           </button>
         </div>
 
-        {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-          </div>
-        ) : filteredListings.length === 0 ? (
-          <div className="text-center text-gray-400 py-12">
-            <p className="text-lg">No products available from {activeTab === 'verified' ? 'verified manufacturers' : 'other sellers'}</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {filteredListings.map(renderListing)}
-          </div>
-        )}
-      </main>
+        <main>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : filteredListings.length === 0 ? (
+            <div className="text-center text-gray-400 py-12">
+              <p className="text-lg">No products found for this search query</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {filteredListings.map(renderListing)}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

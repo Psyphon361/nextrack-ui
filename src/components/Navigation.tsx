@@ -50,87 +50,129 @@ export default function Navigation() {
   const isAppRoute = pathname.startsWith('/app');
 
   return (
-    <nav className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-lg sticky top-0 z-50">
+    <nav className="border-b border-gray-700/50 bg-gray-900/60 backdrop-blur-xl sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href={isAppRoute ? "/app" : "/"} className="flex items-center space-x-2">
-            <Image
-              src="/logo.svg"
-              alt="NexTrack Logo"
-              width={40}
-              height={40}
-              className="w-10 h-10"
-            />
-            <span className="text-2xl font-bold font-['Space_Grotesk']">NexTrack</span>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link href={isAppRoute ? "/app" : "/"} className="flex items-center space-x-4 group">
+              <Image
+                src="/logo.svg"
+                alt="NexTrack Logo"
+                width={40}
+                height={40}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
+              <span className="text-xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
+                NexTrack
+              </span>
+            </Link>
+          </div>
 
           {/* Navigation Links */}
           <div className="flex items-center space-x-8">
             {isAppRoute ? (
               // App Navigation Links
               <>
-                <Link
-                  href="/app/my-batches"
-                  className={`text-lg font-medium hover:text-white transition-colors ${
-                    pathname === '/app/my-batches' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  My Listings
-                </Link>
-                <Link
-                  href="/app/requests"
-                  className={`text-lg font-medium hover:text-white transition-colors ${
-                    pathname === '/app/requests' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  Purchase Requests
-                </Link>
-                <Link
-                  href="/app/marketplace"
-                  className={`text-lg font-medium hover:text-white transition-colors ${
-                    pathname === '/app/marketplace' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  Marketplace
-                </Link>
-                {isManufacturer ? (
+                <div className="flex items-center space-x-6">
                   <Link
-                    href="/app/register-batch"
-                    className={`text-lg font-medium hover:text-white transition-colors ${
-                      pathname === '/app/register-batch' ? 'text-white' : 'text-gray-300'
+                    href="/app/my-batches"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname === '/app/my-batches' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                        : 'text-gray-300 hover:text-white'
                     }`}
                   >
-                    Register Batch
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      My Listings
+                    </span>
                   </Link>
-                ) : (
                   <Link
-                    href="/app/orders"
-                    className={`text-lg font-medium hover:text-white transition-colors ${
-                      pathname === '/app/orders' ? 'text-white' : 'text-gray-300'
+                    href="/app/requests"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname === '/app/requests' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                        : 'text-gray-300 hover:text-white'
                     }`}
                   >
-                    My Orders
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      Purchase Requests
+                    </span>
                   </Link>
-                )}
+                  <Link
+                    href="/app/marketplace"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname === '/app/marketplace' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      Marketplace
+                    </span>
+                  </Link>
+                  {isManufacturer ? (
+                    <Link
+                      href="/app/register-batch"
+                      className={`text-lg font-medium transition-all duration-300 group ${
+                        pathname === '/app/register-batch' 
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      <span className="group-hover:tracking-wider transition-all duration-300">
+                        Register Batch
+                      </span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/app/orders"
+                      className={`text-lg font-medium transition-all duration-300 group ${
+                        pathname === '/app/orders' 
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500' 
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      <span className="group-hover:tracking-wider transition-all duration-300">
+                        My Orders
+                      </span>
+                    </Link>
+                  )}
+                </div>
+
                 {address ? (
-                  <div className="relative flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium bg-gray-700/30">
-                    <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                    <span className="text-gray-300">{formatAddress(address)}</span>
+                  <div className="relative">
+                    <div 
+                      className="relative flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer"
+                      // Add onClick to make the entire div interactive if needed
+                      onClick={() => {/* Optional: Add any click interaction */}}
+                    >
+                      <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"></div>
+                      <div className="w-4 h-4 rounded-full bg-green-400 animate-pulse relative z-10 group-hover:scale-110 transition-transform"></div>
+                      <span className="text-gray-300 tracking-wide relative z-10 group-hover:text-white transition-colors">
+                        {formatAddress(address)}
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <button
                     onClick={handleConnect}
                     disabled={isConnecting}
-                    className="px-3 py-2 rounded-md text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="relative group overflow-hidden px-8 py-3.5 rounded-2xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
                   >
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+                    
+                    {/* Animated border */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl opacity-0 group-hover:opacity-50 blur-xl transition-opacity duration-300"></div>
+                    
                     {isConnecting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                        Connecting...
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3 relative z-10"></div>
+                        <span className="relative z-10">Connecting...</span>
                       </>
                     ) : (
-                      'Connect Wallet'
+                      <span className="relative z-10">Connect Wallet</span>
                     )}
                   </button>
                 )}
@@ -138,34 +180,44 @@ export default function Navigation() {
             ) : (
               // Landing Page Navigation Links
               <>
-                <Link
-                  href="/features"
-                  className={`text-lg font-medium hover:text-white transition-colors ${
-                    pathname === '/features' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  Features
-                </Link>
-                <Link
-                  href="/about"
-                  className={`text-lg font-medium hover:text-white transition-colors ${
-                    pathname === '/about' ? 'text-white' : 'text-gray-300'
-                  }`}
-                >
-                  About
-                </Link>
+                <div className="flex items-center space-x-6">
+                  <Link
+                    href="/features"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname === '/features' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      Features
+                    </span>
+                  </Link>
+                  <Link
+                    href="/about"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname === '/about' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      About
+                    </span>
+                  </Link>
+                </div>
                 
                 {/* Primary Actions */}
                 <div className="flex items-center space-x-4">
                   <Link
                     href="/app"
-                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-blue-500/20"
+                    className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
                   >
                     Launch App
                   </Link>
                   <Link
                     href="/app/marketplace"
-                    className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors shadow-lg shadow-gray-800/20"
+                    className="px-8 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
                   >
                     Browse Marketplace
                   </Link>

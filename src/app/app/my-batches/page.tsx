@@ -85,41 +85,56 @@ interface EditPriceModalProps {
   onClose: () => void;
   onSubmit: (price: string) => void;
   currentPrice: string;
+  isTransactionPending: boolean;
 }
 
-const EditPriceModal = ({ isOpen, onClose, onSubmit, currentPrice }: EditPriceModalProps) => {
+const EditPriceModal = ({ isOpen, onClose, onSubmit, currentPrice, isTransactionPending }: EditPriceModalProps) => {
   const [price, setPrice] = useState(currentPrice);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 p-6 rounded-lg w-96">
-        <h3 className="text-xl font-bold text-white mb-4">Update Unit Price</h3>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 w-96">
+        <h3 className="text-2xl font-bold text-white mb-4 text-center">Update Unit Price</h3>
         <input
           type="number"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          className="w-full px-4 py-2 rounded bg-gray-700 text-white mb-4"
+          className="w-full px-4 py-3 rounded-lg bg-gray-700/50 text-white mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
           placeholder="Enter new price in USD"
           step="0.01"
           min="0"
         />
-        <div className="flex justify-end space-x-3">
+        <div className="flex justify-center mt-3 space-x-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded bg-gray-700 text-white hover:bg-gray-600 transition-colors"
+            disabled={isTransactionPending}
+            className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+              isTransactionPending 
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+                : 'bg-gray-700/50 text-white hover:bg-gray-600/50'
+            }`}
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              onSubmit(price);
-              onClose();
-            }}
-            className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+            onClick={() => onSubmit(price)}
+            disabled={isTransactionPending}
+            className={`px-4 py-2 rounded-lg text-white transition-all duration-300 flex items-center justify-center ${
+              isTransactionPending
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
+            }`}
           >
-            Update
+            {isTransactionPending ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                Updating...
+              </>
+            ) : (
+              'Update'
+            )}
           </button>
         </div>
       </div>
@@ -466,8 +481,8 @@ export default function MyBatchesPage() {
   const updateLocalBatchPrice = (batchId: string, newPrice: bigint) => {
     setBatches(prevBatches => 
       prevBatches.map(batch => 
-        batch.batchId.toString() === batchId
-          ? { ...batch, unitPrice: newPrice }
+        batch.batchId.toString() === batchId 
+          ? { ...batch, unitPrice: newPrice } 
           : batch
       )
     );
@@ -479,53 +494,99 @@ export default function MyBatchesPage() {
       return;
     }
 
-    const toastId = toast.loading('Updating price...');
-    setIsTransactionPending(true);
-
     try {
-      // Create contract instance with signer first
-      const provider = new ethers.BrowserProvider(window.ethereum as any);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
+      setIsTransactionPending(true);
+      
+      // Use parseUnits with 0 precision to pass the exact input
+      const priceInWei = ethers.parseUnits(newPrice, 0);
+      
+      // Create contract instance with signer
+      const signer = new ethers.BrowserProvider(window.ethereum as any).getSigner();
+      const batchContract = new ethers.Contract(
         contractAddress,
         CONTRACT_ABIS.NEXTRACK,
-        signer
+        await signer
       );
 
-      // Convert price string to number (no 18 decimal conversion)
-      const priceValue = BigInt(Math.round(parseFloat(newPrice) * 100) / 100);
-      
       console.log('Updating price for batch:', editingBatch.id);
-      console.log('New price (USD):', priceValue.toString());
+      console.log('New price (USD):', priceInWei.toString());
       
       // Call the update price function with USD value directly
-      const tx = await contract.updateBatchUnitPrice(
+      const tx = await batchContract.updateBatchUnitPrice(
         BigInt(editingBatch.id),
-        priceValue
+        priceInWei
       );
 
-      toast.loading('Updating price on blockchain...', { id: toastId });
-      
+      const toastId = toast.loading('Updating price on blockchain...', {
+        duration: Infinity,
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '10px',
+        },
+      });
+
       // Wait for transaction to be mined
       const receipt = await tx.wait();
       console.log('Transaction confirmed:', receipt.hash);
 
-      // Update the local state without reloading
-      updateLocalBatchPrice(editingBatch.id, priceValue);
-      
-      toast.success('Price updated successfully!', { id: toastId });
+      if (receipt.status === 1) {
+        // Transaction successful
+        toast.success('Batch price updated successfully', {
+          id: toastId,
+          duration: 5000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+        
+        // Refresh page after successful transaction
+        window.location.reload();
+        
+        // Update local state to reflect the new price
+        updateLocalBatchPrice(editingBatch.id, priceInWei);
+        
+        // Close modal and reset editing state
+        setEditingBatch(null);
+      } else {
+        // Transaction failed
+        toast.error('Failed to update batch price', {
+          id: toastId,
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+      }
     } catch (error) {
       console.error(`Error updating price:`, error);
       const errorMessage = (error as Error).message || '';
       
       if (errorMessage.includes('user rejected') || errorMessage.includes('User denied')) {
-        toast.error('Transaction rejected', { id: toastId });
+        toast.error('Transaction rejected', {
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
       } else {
-        toast.error('Failed to update price', { id: toastId });
+        toast.error('Failed to update price', {
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
       }
     } finally {
       setIsTransactionPending(false);
-      setEditingBatch(null);
     }
   };
 
@@ -593,16 +654,18 @@ export default function MyBatchesPage() {
       />
       <Navigation />
       <main className="container mx-auto px-4 py-8">
-        <div className="relative mb-8">
-          <h1 className="text-4xl font-bold text-center text-white">My Listings</h1>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            My Listings
+          </h1>
           {isManufacturer && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <div className="relative w-full md:w-auto mt-4 md:mt-0">
               <a 
                 href="/app/register-batch"
-                className="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors"
+                className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-semibold text-white transition-all duration-300 group"
               >
                 <svg 
-                  className="w-5 h-5 mr-2" 
+                  className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" 
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24" 
@@ -615,40 +678,39 @@ export default function MyBatchesPage() {
                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
-                Register Product
+                Register Batch
               </a>
             </div>
           )}
         </div>
 
-        {/* Status filter */}
-        <div className="flex justify-center mb-8 space-x-4">
+        <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               filter === 'all'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             All
           </button>
           <button
             onClick={() => setFilter('listed')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               filter === 'listed'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Listed
           </button>
           <button
             onClick={() => setFilter('delisted')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               filter === 'delisted'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Delisted
@@ -674,69 +736,89 @@ export default function MyBatchesPage() {
               .map((batch) => (
                 <div 
                   key={batch.batchId.toString()} 
-                  className="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-colors"
+                  className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group relative"
                 >
-                  <h3 className="text-xl font-semibold mb-2">{batch.name}</h3>
-                  <p className="text-gray-400 mb-4">{batch.description}</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Category:</span>
-                      <span>{batch.category}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Quantity:</span>
-                      <span>{batch.totalQuantity.toString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Price per unit:</span>
-                      <div className="flex items-center space-x-2">
-                        <p className="text-white font-medium">{formatPrice(batch.unitPrice)}</p>
-                        <button
-                          onClick={() => setEditingBatch({ 
-                            id: batch.batchId.toString(),
-                            // Divide by 1e18 when setting initial price in modal
-                            price: (Number(batch.unitPrice) / 1e18).toString()
-                          })}
-                          className="text-gray-400 hover:text-white transition-colors"
-                          disabled={isTransactionPending}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                        </button>
+                  {/* Glowing dot indicator */}
+                  <div 
+                    className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
+                      batch.isListed 
+                        ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.7)]' 
+                        : 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.7)]'
+                    }`}
+                  ></div>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-grow pr-4">
+                        <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                          {batch.name}
+                        </h3>
+                        <p className="text-gray-300 text-sm mb-4 line-clamp-2">{batch.description}</p>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">Status:</span>
-                      <div className="flex items-center space-x-2">
-                        <span className={batch.isListed ? 'text-green-400' : 'text-red-400'}>
-                          {batch.isListed ? 'Listed' : 'Delisted'}
-                        </span>
-                        {batch.isListed ? (
-                          <button
-                            onClick={() => handleDelist(batch.batchId)}
-                            disabled={isTransactionPending}
-                            className={`px-2 py-1 text-sm rounded transition-colors ml-2 ${
-                              isTransactionPending
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-red-600 hover:bg-red-700'
-                            }`}
-                          >
-                            Delist
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleRelist(batch.batchId)}
-                            disabled={isTransactionPending}
-                            className={`px-2 py-1 text-sm rounded transition-colors ml-2 ${
-                              isTransactionPending
-                                ? 'bg-gray-600 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700'
-                            }`}
-                          >
-                            Relist
-                          </button>
-                        )}
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
+                      <div>
+                        <p className="text-gray-400 text-sm mb-1">Category</p>
+                        <p className="text-white font-semibold text-lg">{batch.category}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-gray-400 text-sm mb-1">Quantity</p>
+                        <p className="text-white font-semibold text-lg">{batch.totalQuantity.toString()}</p>
+                      </div>
+                      <div className="col-span-2 border-t border-gray-700/30 pt-4">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-gray-400 text-sm mb-1">Price per unit</p>
+                            <div className="flex items-center space-x-2">
+                              <p className="text-white font-semibold text-lg">{formatPrice(batch.unitPrice)}</p>
+                              <button
+                                onClick={() => setEditingBatch({ 
+                                  id: batch.batchId.toString(),
+                                  price: (Number(batch.unitPrice) / 1e18).toString()
+                                })}
+                                className="text-gray-400 hover:text-blue-400 transition-colors"
+                                disabled={isTransactionPending}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                </svg>
+                              </button>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-gray-400 text-sm mb-1">Status</p>
+                            <div className="flex items-center space-x-2">
+                              <span className={`font-semibold text-lg ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
+                                {batch.isListed ? 'Listed' : 'Delisted'}
+                              </span>
+                              {batch.isListed ? (
+                                <button
+                                  onClick={() => handleDelist(batch.batchId)}
+                                  disabled={isTransactionPending}
+                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${
+                                    isTransactionPending
+                                      ? 'bg-gray-600 cursor-not-allowed'
+                                      : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
+                                  }`}
+                                >
+                                  Delist
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleRelist(batch.batchId)}
+                                  disabled={isTransactionPending}
+                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${
+                                    isTransactionPending
+                                      ? 'bg-gray-600 cursor-not-allowed'
+                                      : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white'
+                                  }`}
+                                >
+                                  Relist
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -750,6 +832,7 @@ export default function MyBatchesPage() {
         onClose={() => setEditingBatch(null)}
         onSubmit={handleUpdatePrice}
         currentPrice={editingBatch?.price || ''}
+        isTransactionPending={isTransactionPending}
       />
     </div>
   );
