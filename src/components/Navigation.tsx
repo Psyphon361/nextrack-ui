@@ -129,7 +129,7 @@ export default function Navigation() {
                       href="/app/orders"
                       className={`text-lg font-medium transition-all duration-300 group ${
                         pathname === '/app/orders' 
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500' 
+                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                           : 'text-gray-300 hover:text-white'
                       }`}
                     >

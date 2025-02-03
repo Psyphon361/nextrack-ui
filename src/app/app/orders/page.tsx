@@ -7,6 +7,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import { useNexTrackContract } from '@/hooks/useNexTrackContract';
 import Navigation from '@/components/Navigation';
 import NexTrackABI from '../../../contracts/NexTrackABI.json';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 
 // Contract interfaces
 interface ContractTransferRequest {
@@ -49,6 +50,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [processingTx, setProcessingTx] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<number | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Format number to 2 decimal places and remove trailing zeros
   const formatNumber = (value: string) => {
@@ -194,8 +196,15 @@ export default function OrdersPage() {
   };
 
   const displayedRequests = requests.filter((request) => {
-    if (statusFilter === undefined) return true;
-    return request.status === statusFilter;
+    const matchesStatus = statusFilter === undefined || request.status === statusFilter;
+    const matchesSearch = searchQuery.trim() === '' || 
+      request.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.productDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.seller.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.buyer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      request.batchId.toString().includes(searchQuery);
+    
+    return matchesStatus && matchesSearch;
   });
 
   const getStatusClass = (status: number) => {
@@ -214,60 +223,74 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <Navigation />
       <main className="container mx-auto px-4 py-8">
         <Toaster />
-        <h1 className="text-4xl font-bold mb-8 text-center text-white">My Orders</h1>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+            My Orders
+          </h1>
+          <div className="relative w-full md:w-96 mt-4 md:mt-0">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search orders..."
+              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 pl-10"
+            />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+          </div>
+        </div>
         
         {/* Status filter */}
-        <div className="flex justify-center mb-8 space-x-4">
+        <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setStatusFilter(undefined)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === undefined
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             All
           </button>
           <button
             onClick={() => setStatusFilter(0)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 0
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Pending
           </button>
           <button
             onClick={() => setStatusFilter(1)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 1
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Approved
           </button>
           <button
             onClick={() => setStatusFilter(2)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 2
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Rejected
           </button>
           <button
             onClick={() => setStatusFilter(3)}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
               statusFilter === 3
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
             }`}
           >
             Completed
@@ -279,98 +302,109 @@ export default function OrdersPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
           </div>
         ) : displayedRequests.length === 0 ? (
-          <div className="text-center text-gray-400 py-12">
-            <p className="text-lg">No {statusFilter === undefined ? '' : REQUEST_STATUS_LABELS[statusFilter]} orders found</p>
+          <div className="text-center text-gray-400 py-8">
+            No orders found{searchQuery ? ` matching "${searchQuery}"` : ''}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {displayedRequests.map((request) => (
               <div
                 key={request.requestId.toString()}
-                className="bg-gray-800 rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow"
+                className="space-y-4 bg-gray-800/50 rounded-xl p-6 border border-gray-700/30"
               >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start">
+                  <div className="flex-grow pr-4">
+                    <h3 className="text-2xl font-bold text-white mb-2 transition-colors">
+                      {request.productName}
+                    </h3>
+                    <p className="text-gray-300 text-sm mb-4 line-clamp-2">{request.productDescription}</p>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-gray-400 text-sm mb-1">Batch ID</div>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(request.batchId.toString());
+                        toast.success('Batch ID copied to clipboard');
+                      }}
+                      className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded hover:bg-blue-600/50 transition-colors"
+                    >
+                      {request.batchId.toString()}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Quantity</p>
+                    <p className="text-white font-semibold text-lg">{request.quantity}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400 text-sm mb-1">Price per Unit</p>
+                    <p className="text-white font-semibold text-lg">${request.pricePerUnit}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm mb-1">Total Amount</p>
+                    <p className="text-white font-semibold text-lg">${request.totalAmount}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-400 text-sm mb-1">Status</p>
+                    <p className={`font-semibold text-lg ${getStatusClass(request.status)}`}>
+                      {REQUEST_STATUS_LABELS[request.status]}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-700/30 pt-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-gray-400">From</div>
+                      <p className="text-gray-400 text-sm mb-1">From</p>
                       <button 
                         onClick={() => {
                           navigator.clipboard.writeText(request.seller);
                           toast.success('Address copied to clipboard');
                         }}
-                        className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
+                        className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
                       >
                         {request.seller}
                       </button>
-                      <div className="text-gray-400 mt-2">To</div>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">To</p>
                       <button 
                         onClick={() => {
                           navigator.clipboard.writeText(request.buyer);
                           toast.success('Address copied to clipboard');
                         }}
-                        className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
+                        className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
                       >
                         {request.buyer}
                       </button>
                     </div>
-                    <div>
-                      <div className="text-gray-400">Batch ID</div>
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(request.batchId.toString());
-                          toast.success('Batch ID copied to clipboard');
-                        }}
-                        className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
-                      >
-                        {request.batchId.toString()}
-                      </button>
-                    </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-gray-400 text-sm">Quantity</p>
-                      <p className="text-white font-medium">{request.quantity}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-gray-400 text-sm">Price per Unit</p>
-                      <p className="text-white font-medium">{request.pricePerUnit} mUSDT</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-sm">Total Amount</p>
-                      <p className="text-white font-medium">{request.totalAmount} mUSDT</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-gray-400 text-sm">Status</p>
-                      <p className={`font-medium ${getStatusClass(request.status)}`}>
-                        {REQUEST_STATUS_LABELS[request.status]}
-                      </p>
-                    </div>
-                  </div>
-
-                  {request.status === 1 && (
-                    <div className="mt-4">
-                      <button
-                        onClick={() => handleConfirmReceipt(request.requestId)}
-                        disabled={!!processingTx}
-                        className={`w-full ${
-                          processingTx
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : 'bg-green-600 hover:bg-green-700'
-                        } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
-                      >
-                        {processingTx === `confirm-${request.requestId.toString()}` ? (
-                          <span className="flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                            Confirming...
-                          </span>
-                        ) : (
-                          'Confirm Receipt'
-                        )}
-                      </button>
-                    </div>
-                  )}
                 </div>
+
+                {request.status === 1 && (
+                  <div className="mt-4">
+                    <button
+                      onClick={() => handleConfirmReceipt(request.requestId)}
+                      disabled={!!processingTx}
+                      className={`w-full ${
+                        processingTx
+                          ? 'bg-gray-600 cursor-not-allowed'
+                          : 'bg-green-600 hover:bg-green-700'
+                      } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                    >
+                      {processingTx === `confirm-${request.requestId.toString()}` ? (
+                        <span className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Confirming...
+                        </span>
+                      ) : (
+                        'Confirm Receipt'
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

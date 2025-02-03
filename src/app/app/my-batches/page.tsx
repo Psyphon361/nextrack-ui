@@ -617,9 +617,19 @@ export default function MyBatchesPage() {
           }}
         />
         <Navigation />
-        <div className="container mx-auto px-6 py-16">
-          <h1 className="text-3xl font-bold mb-8">My Listings</h1>
-          <p>Please connect your wallet to view your listings.</p>
+        <div className="container mx-auto px-6 py-8">
+          <h1 
+            className="text-4xl font-bold font-['Space_Grotesk']" 
+            style={{
+              background: 'linear-gradient(to right, #60a5fa, #a855f7)',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              display: 'inline-block'
+            }}
+          >
+            My Listings
+          </h1>
+          <p className="text-gray-300 text-lg mt-5">Please connect your wallet to view your listings.</p>
         </div>
       </div>
     );
@@ -788,7 +798,7 @@ export default function MyBatchesPage() {
                           <div>
                             <p className="text-gray-400 text-sm mb-1">Status</p>
                             <div className="flex items-center space-x-2">
-                              <span className={`font-semibold text-lg ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
+                              <span className={`font-semibold text-md ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
                                 {batch.isListed ? 'Listed' : 'Delisted'}
                               </span>
                               {batch.isListed ? (
