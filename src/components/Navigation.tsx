@@ -185,7 +185,7 @@ export default function Navigation() {
                     href="/features"
                     className={`text-lg font-medium transition-all duration-300 group ${
                       pathname === '/features' 
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
                     }`}
                   >
@@ -197,7 +197,7 @@ export default function Navigation() {
                     href="/about"
                     className={`text-lg font-medium transition-all duration-300 group ${
                       pathname === '/about' 
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
                     }`}
                   >
