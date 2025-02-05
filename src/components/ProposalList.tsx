@@ -1,8 +1,10 @@
 'use client';
 
-import { useProposals, ProposalState } from '@/hooks/useProposals';
-import { formatDistanceToNow, format } from 'date-fns';
+import { useProposals } from '@/hooks/useProposals';
+import { formatDistanceToNow, format, differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 enum ProposalState {
   Pending,
@@ -17,22 +19,44 @@ enum ProposalState {
 
 function getProposalStateLabel(state: number) {
   const stateMap = {
-    [ProposalState.Pending]: { label: 'Pending', className: 'bg-yellow-900/20 text-yellow-200 ring-1 ring-yellow-900/30' },
-    [ProposalState.Active]: { label: 'Active', className: 'bg-green-900/20 text-green-200 ring-1 ring-green-900/30' },
-    [ProposalState.Canceled]: { label: 'Canceled', className: 'bg-red-900/20 text-red-200 ring-1 ring-red-900/30' },
-    [ProposalState.Defeated]: { label: 'Defeated', className: 'bg-red-900/20 text-red-200 ring-1 ring-red-900/30' },
-    [ProposalState.Succeeded]: { label: 'Succeeded', className: 'bg-green-900/20 text-green-200 ring-1 ring-green-900/30' },
-    [ProposalState.Queued]: { label: 'Queued', className: 'bg-blue-900/20 text-blue-200 ring-1 ring-blue-900/30' },
-    [ProposalState.Expired]: { label: 'Expired', className: 'bg-gray-900/20 text-gray-200 ring-1 ring-gray-900/30' },
-    [ProposalState.Executed]: { label: 'Executed', className: 'bg-purple-900/20 text-purple-200 ring-1 ring-purple-900/30' }
+    [ProposalState.Pending]: { label: 'Pending', className: 'bg-yellow-500 text-black font-bold' },
+    [ProposalState.Active]: { label: 'Active', className: 'bg-green-500 text-black font-bold' },
+    [ProposalState.Canceled]: { label: 'Canceled', className: 'bg-red-500 text-white font-bold' },
+    [ProposalState.Defeated]: { label: 'Defeated', className: 'bg-red-500 text-white font-bold' },
+    [ProposalState.Succeeded]: { label: 'Succeeded', className: 'bg-green-500 text-black font-bold' },
+    [ProposalState.Queued]: { label: 'Queued', className: 'bg-blue-500 text-black font-bold' },
+    [ProposalState.Expired]: { label: 'Expired', className: 'bg-gray-500 text-white font-bold' },
+    [ProposalState.Executed]: { label: 'Executed', className: 'bg-purple-500 text-white font-bold' }
   };
 
-  return stateMap[state as ProposalState] || { label: 'Unknown', className: 'bg-gray-900/20 text-gray-200 ring-1 ring-gray-900/30' };
+  return stateMap[state as ProposalState] || { label: 'Unknown', className: 'bg-gray-500 text-white font-bold' };
 }
 
-const formatAddress = (address: string) => {
+function formatAddress(address: string) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
-};
+}
+
+function CountdownTimer({ targetDate }: { targetDate: Date }) {
+  const [timeLeft, setTimeLeft] = useState('');
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const seconds = differenceInSeconds(targetDate, new Date());
+      if (seconds <= 0) {
+        setTimeLeft('Started');
+        clearInterval(timer);
+      } else {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        setTimeLeft(`${minutes}m ${remainingSeconds}s`);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  return <span className="font-mono">{timeLeft}</span>;
+}
 
 export default function ProposalList() {
   const { proposals, isLoading, error } = useProposals();
@@ -61,9 +85,12 @@ export default function ProposalList() {
     );
   }
 
+  // Sort proposals by voting start time
+  const sortedProposals = [...proposals].sort((a, b) => a.voteStart.getTime() - b.voteStart.getTime());
+
   return (
-    <div className="space-y-6">
-      {proposals.map((proposal, index) => {
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {sortedProposals.map((proposal, index) => {
         const { label, className } = getProposalStateLabel(proposal.state);
         
         return (
@@ -85,15 +112,23 @@ export default function ProposalList() {
               <div className="space-y-2 flex-1">
                 <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Proposal Description</h3>
                 <p className="text-base text-white leading-relaxed pr-4">
-                  {proposal.description}
+                  {proposal.description.length > 150 
+                    ? `${proposal.description.slice(0, 150)}...` 
+                    : proposal.description}
                 </p>
+                <Link 
+                  href={`/dao/proposal/${proposal.id}`}
+                  className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-block mt-2"
+                >
+                  View Details →
+                </Link>
               </div>
               <span className={`px-4 py-1.5 rounded-full text-sm font-medium ml-4 flex-shrink-0 ${className}`}>
-                <span className="text-white">{label}</span>
+                {label}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Proposed Manufacturer</p>
                 <div className="flex items-center space-x-2">
@@ -114,12 +149,12 @@ export default function ProposalList() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-gray-700/50">
+            <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-700/50">
               <div className="space-y-1.5">
                 <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Voting Starts</p>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-white">
-                    {formatDistanceToNow(proposal.voteStart, { addSuffix: true })}
+                    <CountdownTimer targetDate={proposal.voteStart} />
                   </p>
                   <p className="text-xs text-gray-500">
                     [{format(proposal.voteStart, 'MMM d, yyyy HH:mm')}]
