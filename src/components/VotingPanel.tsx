@@ -5,8 +5,29 @@ import { useAccount, useReadContract, useWriteContract, useWaitForTransactionRec
 import { Address } from 'viem';
 import toast from 'react-hot-toast';
 
+// Define ProposalState enum here since it's used only in this component
+enum ProposalState {
+  Pending,
+  Active,
+  Canceled,
+  Defeated,
+  Succeeded,
+  Queued,
+  Expired,
+  Executed
+}
+
 interface VotingPanelProps {
-  proposalId: string;
+  proposal: {
+    id: string;
+    state: number;
+  };
+}
+
+enum VoteType {
+  Against = 0,
+  For = 1,
+  Abstain = 2
 }
 
 const govTokenABI = [{
@@ -47,22 +68,34 @@ const govTokenABI = [{
   outputs: []
 }] as const;
 
-export default function VotingPanel({ proposalId }: VotingPanelProps) {
+const govTokenAddress = '0x42Ba3102b25bC67616Aa7F2b93Cde753965E2126' as Address;
+const governorAddress = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13' as Address;
+
+const governorABI = [{
+  name: 'castVote',
+  type: 'function',
+  stateMutability: 'nonpayable',
+  inputs: [
+    { name: 'proposalId', type: 'uint256' },
+    { name: 'support', type: 'uint8' }
+  ],
+  outputs: []
+}] as const;
+
+export default function VotingPanel({ proposal }: VotingPanelProps) {
   const { address } = useAccount();
   const [delegateAddress, setDelegateAddress] = useState('');
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [addressError, setAddressError] = useState('');
   const [comment, setComment] = useState('');
-  const [selectedVote, setSelectedVote] = useState<'for' | 'against' | 'abstain' | null>(null);
+  const [selectedVote, setSelectedVote] = useState<VoteType | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showDelegateInput, setShowDelegateInput] = useState(false);
   const tooltipTimeout = useRef<NodeJS.Timeout>();
   const [isDelegating, setIsDelegating] = useState(false);
   const [votingPower, setVotingPower] = useState(0);
   const [hasDelegatedToSelf, setHasDelegatedToSelf] = useState(false);
-
-  const govTokenAddress = '0x6aF8602fe599FE84C745dd56fC8fda68a73EEB85' as Address;
-  const governorAddress = '0xC4d949Ad881f8BCe2532E60585c483D4Ecd45352' as Address;
+  const [txPending, setTxPending] = useState(false);
 
   // Get NXT balance
   const { data: nxtBalance } = useReadContract({
@@ -110,7 +143,7 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
 
   // Contract write hooks
   const { writeContract, data: hash, isPending } = useWriteContract();
-  const { isLoading: isDelegatingTx, isSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isTxLoading, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
 
@@ -137,33 +170,47 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
 
   // Handle transaction states
   useEffect(() => {
-    if (isPending) {
-      toast.loading('Confirm in wallet...', {
+    if (isPending && !txPending) {
+      setTxPending(true);
+      toast.loading('Confirm the transaction in your wallet...', {
         id: 'vote-tx',
-        duration: Infinity,
       });
     }
-  }, [isPending]);
+  }, [isPending, txPending]);
 
   useEffect(() => {
-    if (isDelegatingTx) {
-      toast.loading('Submitting vote on-chain...', {
+    if (isTxLoading && txPending) {
+      toast.loading('Casting vote...', {
         id: 'vote-tx',
-        duration: Infinity,
       });
     }
-  }, [isDelegatingTx]);
+  }, [isTxLoading, txPending]);
 
   useEffect(() => {
-    if (isSuccess) {
-      toast.success('Vote submitted successfully!', {
+    if (isSuccess && txPending) {
+      toast.success('Vote cast successfully!', {
+        id: 'vote-tx',
+        duration: 3000,
+      });
+
+      // Wait for blockchain to update
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }
+  }, [isSuccess, txPending]);
+
+  // Reset txPending and show error if transaction is not in a pending state
+  useEffect(() => {
+    if (!isPending && !isTxLoading && txPending && !isSuccess) {
+      setTxPending(false);
+      toast.error('Transaction rejected', {
         id: 'vote-tx',
         duration: 3000,
       });
     }
-  }, [isSuccess]);
+  }, [isPending, isTxLoading, txPending, isSuccess]);
 
-  // Handle delegation
   const handleParticipate = async () => {
     if (!address) {
       toast.error('Please connect wallet');
@@ -187,33 +234,26 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
     }
   };
 
-  // Handle voting
   const handleVoteSubmit = async () => {
-    if (!address || !selectedVote || !comment.trim()) {
+    if (!address || selectedVote === null || !comment.trim()) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    const voteMap = {
-      'for': 1n,
-      'against': 0n,
-      'abstain': 2n
-    };
-
     try {
-      await writeContract({
+      writeContract({
         address: governorAddress,
-        abi: govTokenABI,
-        functionName: 'castVoteWithReason',
-        args: [BigInt(proposalId), voteMap[selectedVote], comment.trim()],
+        abi: governorABI,
+        functionName: 'castVote',
+        args: [BigInt(proposal.id), selectedVote],
       });
-    } catch (error: any) {
-      console.error('Vote error:', error);
-      if (error?.code === 4001 || error?.code === 'ACTION_REJECTED' || error?.message?.includes('user rejected')) {
-        toast.error('Transaction rejected', { id: 'vote-tx' });
-      } else {
-        toast.error('Failed to submit vote', { id: 'vote-tx' });
-      }
+    } catch (err) {
+      console.error('Error casting vote:', err);
+      toast.error('Failed to cast vote', {
+        id: 'vote-tx',
+        duration: 3000,
+      });
+      setTxPending(false);
     }
   };
 
@@ -224,7 +264,7 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
       setIsValidAddress(false);
       return;
     }
-    
+
     if (!value.startsWith('0x')) {
       setAddressError('Address must start with 0x');
       setIsValidAddress(false);
@@ -268,6 +308,34 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
     }, 100);
   };
 
+  const handleVote = async (support: VoteType) => {
+    if (!address) return;
+
+    try {
+      setSelectedVote(support);
+
+      writeContract({
+        address: governorAddress,
+        abi: governorABI,
+        functionName: 'castVote',
+        args: [BigInt(proposal.id), support],
+      });
+    } catch (err) {
+      console.error('Error casting vote:', err);
+      toast.error('Failed to cast vote', {
+        id: 'vote-tx',
+        duration: 3000,
+      });
+      setTxPending(false);
+    }
+  };
+
+  if (!proposal) {
+    return null;
+  }
+
+  const isVotingEnabled = proposal?.state === 1;
+
   return (
     <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
       <div className="space-y-6">
@@ -283,19 +351,12 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
 
         {/* Voting Power Section */}
         <div>
-          <h3 className="text-lg font-semibold mb-2">Voting Power</h3>
-          <div className="bg-gray-900/50 rounded-xl p-4">
-            <div className="text-3xl font-bold mb-2">
-              {votingPower}
-            </div>
-          </div>
-
           <button
             onClick={handleParticipate}
-            disabled={isDelegatingTx || hasDelegatedToSelf}
-            className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
+            disabled={isDelegating || hasDelegatedToSelf || !isVotingEnabled}
+            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
           >
-            {isDelegatingTx ? 'Setting up...' : hasDelegatedToSelf ? 'Already Participating' : 'Participate in Voting'}
+            {isDelegating ? 'Setting up...' : hasDelegatedToSelf ? 'Self Delegated' : !isVotingEnabled ? 'Voting is not active' : 'Participate in Voting'}
           </button>
 
           <div className="relative mt-4">
@@ -329,39 +390,80 @@ export default function VotingPanel({ proposalId }: VotingPanelProps) {
         {/* Voting Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Cast Your Vote</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {['for', 'against', 'abstain'].map((vote) => (
-              <button
-                key={vote}
-                onClick={() => setSelectedVote(vote as typeof selectedVote)}
-                disabled={!hasDelegatedToSelf}
-                className={`
-                  px-4 py-3 rounded-xl font-medium capitalize transition-all duration-200
-                  ${selectedVote === vote
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                  }
-                  ${!hasDelegatedToSelf && 'opacity-50 cursor-not-allowed'}
-                `}
-              >
-                {vote}
-              </button>
-            ))}
+          {!isVotingEnabled && (
+            <div className="text-yellow-500 mb-4">
+              Voting is not active for this proposal
+            </div>
+          )}
+          <div className="flex flex-col space-y-4 max-w-xl mx-auto">
+            <button
+              onClick={() => setSelectedVote(VoteType.For)}
+              disabled={txPending}
+              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.For
+                  ? 'bg-green-500/20 border-green-500'
+                  : 'border-gray-700/50 hover:border-green-500/50'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <div className="text-xl font-medium text-green-500">For</div>
+              <div className="text-sm text-gray-400 mt-1">Vote in favor of the proposal</div>
+            </button>
+
+            <button
+              onClick={() => setSelectedVote(VoteType.Against)}
+              disabled={txPending}
+              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Against
+                  ? 'bg-red-500/20 border-red-500'
+                  : 'border-gray-700/50 hover:border-red-500/50'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <div className="text-xl font-medium text-red-500">Against</div>
+              <div className="text-sm text-gray-400 mt-1">Vote against the proposal</div>
+            </button>
+
+            <button
+              onClick={() => setSelectedVote(VoteType.Abstain)}
+              disabled={txPending}
+              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Abstain
+                  ? 'bg-gray-500/20 border-gray-500'
+                  : 'border-gray-700/50 hover:border-gray-500/50'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              <div className="text-xl font-medium text-gray-400">Abstain</div>
+              <div className="text-sm text-gray-400 mt-1">Formally abstain from voting</div>
+            </button>
+
+            <textarea
+              placeholder="Add a comment (required)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              disabled={!hasDelegatedToSelf || !isVotingEnabled || txPending}
+              className="w-full h-24 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+
+            <button
+              onClick={handleVoteSubmit}
+              disabled={!hasDelegatedToSelf || !selectedVote || !comment.trim() || !isVotingEnabled || txPending}
+              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
+            >
+              {txPending
+                ? isPending
+                  ? "Confirm in wallet..."
+                  : isTxLoading
+                    ? "Casting vote..."
+                    : "Processing..."
+                : !isVotingEnabled
+                  ? proposal.state === 0
+                    ? "Voting hasn't started"
+                    : "Voting has ended"
+                  : "Submit Vote"}
+            </button>
           </div>
-          <textarea
-            placeholder="Add a comment (required)"
-            value={comment}
-            onChange={(e) => setComment(e.target.value)}
-            disabled={!hasDelegatedToSelf}
-            className="w-full h-24 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          />
-          <button
-            onClick={handleVoteSubmit}
-            disabled={!hasDelegatedToSelf || !selectedVote || !comment.trim()}
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
-          >
-            Submit Vote
-          </button>
+
+          {!address && (
+            <div className="mt-4 text-yellow-500 text-center">
+              Connect your wallet to vote
+            </div>
+          )}
         </div>
       </div>
     </div>

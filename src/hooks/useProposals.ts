@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 
-const GOVERNOR_ADDRESS = '0xC4d949Ad881f8BCe2532E60585c483D4Ecd45352';
+const GOVERNOR_ADDRESS = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13';
 const RPC_URL = 'https://rpc.ankr.com/electroneum_testnet/15266e093685caca47b9a524ba83c22259a0590c105a2b4c5c5b2a7c2d0c7f0c';
 const BLOCK_TIME = 5; // Electroneum block time in seconds
+const DEBOUNCE_TIME = 2000; // 2 seconds debounce for refreshing
 
 export enum ProposalState {
   Pending,
@@ -27,6 +28,9 @@ export interface Proposal {
   forVotes: string;
   againstVotes: string;
   abstainVotes: string;
+  targets: `0x${string}`[];
+  values: bigint[];
+  calldatas: `0x${string}`[];
 }
 
 // Define the ABI for the events and functions we need
@@ -143,26 +147,32 @@ export function useProposals() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  const isFetchingRef = useRef(false);
 
-  useEffect(() => {
-    const fetchProposals = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  const fetchProposals = useCallback(async () => {
+    if (isFetchingRef.current) {
+      console.log('Already fetching proposals, skipping...');
+      return;
+    }
 
-        console.log('Setting up ethers provider and contract...');
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const contract = new ethers.Contract(GOVERNOR_ADDRESS, governorABI, provider);
+    try {
+      isFetchingRef.current = true;
+      setIsLoading(true);
+      setError(null);
 
-        // Get all ProposalCreated events
-        const filter = contract.filters.ProposalCreated();
-        const events = await contract.queryFilter(filter);
+      console.log('Setting up ethers provider and contract...');
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+      const contract = new ethers.Contract(GOVERNOR_ADDRESS, governorABI, provider);
 
-        // Process each proposal
-        const proposalPromises = events.map(async (event) => {
-          const args = event.args;
-          if (!args) return null;
+      const filter = contract.filters.ProposalCreated();
+      const events = await contract.queryFilter(filter);
 
+      const proposalPromises = events.map(async (event) => {
+        const args = event.args;
+        if (!args) return null;
+
+        try {
           const proposalId = args.proposalId.toString();
           const manufacturerAddress = extractManufacturerAddress(args.calldatas[0]);
 
@@ -172,11 +182,54 @@ export function useProposals() {
             BigInt(args.endBlock)
           );
 
-          // Get proposal state
           const state = await contract.state(proposalId);
-
-          // Get proposal votes
           const votes = await contract.proposalVotes(proposalId);
+
+          // Handle values from ethers event
+          let values: bigint[] = [];
+          try {
+            // First try to get raw values
+            const rawValues = args.values;
+            
+            // If it's an array-like object, convert it to array
+            const valueArray = Array.from(rawValues);
+            
+            // Map each value
+            values = valueArray.map(v => {
+              // If it's already a bigint, return it
+              if (typeof v === 'bigint') return v;
+              
+              // If it's a BigNumber or similar object with hex
+              if (typeof v === 'object' && v !== null && '_hex' in v) {
+                return BigInt(v._hex);
+              }
+              
+              // If it's a regular number
+              if (typeof v === 'number') {
+                return BigInt(v);
+              }
+              
+              // If it's a numeric string
+              if (typeof v === 'string' && /^[0-9]+$/.test(v)) {
+                return BigInt(v);
+              }
+              
+              // For any other case, try toString() if available
+              if (v && typeof v.toString === 'function') {
+                const str = v.toString();
+                if (/^[0-9]+$/.test(str)) {
+                  return BigInt(str);
+                }
+              }
+              
+              // Default case
+              console.warn('Using default value 0 for:', v);
+              return 0n;
+            });
+          } catch (err) {
+            console.error('Error processing values array:', err);
+            values = [0n]; // Default to single zero value
+          }
 
           return {
             id: proposalId,
@@ -188,69 +241,15 @@ export function useProposals() {
             state: Number(state),
             forVotes: ethers.formatEther(votes[1]),
             againstVotes: ethers.formatEther(votes[0]),
-            abstainVotes: ethers.formatEther(votes[2])
+            abstainVotes: ethers.formatEther(votes[2]),
+            targets: args.targets,
+            values,
+            calldatas: args.calldatas
           };
-        });
-
-        const fetchedProposals = (await Promise.all(proposalPromises)).filter((p): p is Proposal => p !== null);
-        setProposals(fetchedProposals.sort((a, b) => b.voteStart.getTime() - a.voteStart.getTime()));
-      } catch (err) {
-        console.error('Error fetching proposals:', err);
-        setError('Failed to fetch proposals');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchProposals();
-  }, []);
-
-  const refreshProposals = async () => {
-    setIsLoading(true);
-    setProposals([]);
-    setError(null);
-
-    try {
-      console.log('Setting up ethers provider and contract...');
-      const provider = new ethers.JsonRpcProvider(RPC_URL);
-      const contract = new ethers.Contract(GOVERNOR_ADDRESS, governorABI, provider);
-
-      // Get all ProposalCreated events
-      const filter = contract.filters.ProposalCreated();
-      const events = await contract.queryFilter(filter);
-
-      // Process each proposal
-      const proposalPromises = events.map(async (event) => {
-        const args = event.args;
-        if (!args) return null;
-
-        const proposalId = args.proposalId.toString();
-        const manufacturerAddress = extractManufacturerAddress(args.calldatas[0]);
-
-        const { voteStart, voteEnd } = await calculateVoteTiming(
-          provider,
-          BigInt(args.startBlock),
-          BigInt(args.endBlock)
-        );
-
-        // Get proposal state
-        const state = await contract.state(proposalId);
-
-        // Get proposal votes
-        const votes = await contract.proposalVotes(proposalId);
-
-        return {
-          id: proposalId,
-          proposer: args.proposer.toLowerCase(),
-          description: args.description,
-          manufacturerAddress,
-          voteStart,
-          voteEnd,
-          state: Number(state),
-          forVotes: ethers.formatEther(votes[1]),
-          againstVotes: ethers.formatEther(votes[0]),
-          abstainVotes: ethers.formatEther(votes[2])
-        };
+        } catch (err) {
+          console.error('Error processing proposal:', err);
+          return null;
+        }
       });
 
       const fetchedProposals = (await Promise.all(proposalPromises)).filter((p): p is Proposal => p !== null);
@@ -260,8 +259,42 @@ export function useProposals() {
       setError('Failed to fetch proposals');
     } finally {
       setIsLoading(false);
+      isFetchingRef.current = false;
     }
-  };
+  }, []);
 
-  return { proposals, isLoading, error, refreshProposals };
+  const refreshProposals = useCallback(async () => {
+    // Clear any existing refresh timeout
+    if (refreshTimeoutRef.current) {
+      clearTimeout(refreshTimeoutRef.current);
+    }
+
+    // Wait a bit before refreshing to allow the blockchain to update
+    refreshTimeoutRef.current = setTimeout(() => {
+      fetchProposals();
+    }, 2000);
+
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [fetchProposals]);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchProposals();
+    return () => {
+      if (refreshTimeoutRef.current) {
+        clearTimeout(refreshTimeoutRef.current);
+      }
+    };
+  }, [fetchProposals]);
+
+  return {
+    proposals,
+    isLoading,
+    error,
+    refreshProposals
+  };
 }

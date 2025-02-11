@@ -63,7 +63,7 @@ export default function Navigation() {
                 height={40}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
+              <span className="text-3xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
                 NexTrack
               </span>
             </Link>
@@ -109,6 +109,18 @@ export default function Navigation() {
                   >
                     <span className="group-hover:tracking-wider transition-all duration-300">
                       Marketplace
+                    </span>
+                  </Link>
+                  <Link
+                    href="/dao"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname.startsWith('/dao')
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      Governance
                     </span>
                   </Link>
                   {isManufacturer ? (
@@ -181,6 +193,18 @@ export default function Navigation() {
               // Landing Page Navigation Links
               <>
                 <div className="flex items-center space-x-6">
+                <Link
+                    href="/dao"
+                    className={`text-lg font-medium transition-all duration-300 group ${
+                      pathname.startsWith('/dao')
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    <span className="group-hover:tracking-wider transition-all duration-300">
+                      Governance
+                    </span>
+                  </Link>
                   <Link
                     href="/features"
                     className={`text-lg font-medium transition-all duration-300 group ${

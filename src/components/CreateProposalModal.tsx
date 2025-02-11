@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { encodeFunctionData, isAddress } from 'viem';
 import toast, { Toaster } from 'react-hot-toast';
@@ -11,8 +11,8 @@ interface CreateProposalModalProps {
   onClose: () => void;
 }
 
-const GOVERNOR_ADDRESS = '0xC4d949Ad881f8BCe2532E60585c483D4Ecd45352';
-const NEXTRACK_ADDRESS = '0xeC017B8e5f926963Eb178B084baf1f715995424A';
+const GOVERNOR_ADDRESS = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13';
+const NEXTRACK_ADDRESS = '0x8439D9087b5E27a6cCEbe796274c2557a2180159';
 
 // ABI for contract functions
 const nexTrackABI = [{
@@ -70,10 +70,13 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
   const [addressError, setAddressError] = useState<string | null>(null);
   const { address, isConnected } = useAccount();
   const [error, setError] = useState<string | null>(null);
-  const [toastId, setToastId] = useState<string | null>(null);
   const { refreshProposals } = useProposals();
+  const [txPending, setTxPending] = useState(false);
 
-  const { writeContract, data: hash, isPending, isError: isWriteError } = useWriteContract();
+  const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
+  const { isLoading: isTxLoading, isSuccess } = useWaitForTransactionReceipt({
+    hash,
+  });
 
   // Get list of registered manufacturers
   const { data: registeredManufacturers = [] } = useReadContract({
@@ -82,41 +85,69 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
     functionName: 'getRegisteredManufacturers',
   });
 
-  const { isLoading: isProposalPending, isSuccess } = useWaitForTransactionReceipt({
-    hash,
-  });
+  // Handle transaction states
+  useEffect(() => {
+    if (isPending && !txPending) {
+      setTxPending(true);
+      toast.loading('Confirm the transaction in your wallet...', {
+        id: 'proposal-tx',
+        duration: Infinity,
+      });
+    }
+  }, [isPending, txPending]);
 
-  // Handle transaction success
-  if (isSuccess && toastId) {
-    toast.dismiss(toastId);
-    toast.success('Proposal created successfully!', {
-      duration: 5000,
-      style: {
-        background: '#333',
-        color: '#fff',
-        borderRadius: '10px',
-      },
-    });
-    setToastId(null);
-    setDescription('');
-    setManufacturerAddress('');
-    refreshProposals();
-    onClose();
-  }
+  useEffect(() => {
+    if (isTxLoading && txPending) {
+      toast.loading('Creating proposal...', {
+        id: 'proposal-tx',
+        duration: Infinity,
+      });
+    }
+  }, [isTxLoading, txPending]);
 
-  // Handle transaction error
-  if (isWriteError && toastId) {
-    toast.dismiss(toastId);
-    toast.error('Transaction cancelled', {
-      duration: 3000,
-      style: {
-        background: '#333',
-        color: '#fff',
-        borderRadius: '10px',
-      },
-    });
-    setToastId(null);
-  }
+  // Handle write contract error
+  useEffect(() => {
+    if (writeError && txPending) {
+      console.error('Error writing contract:', writeError);
+      toast.error('Transaction cancelled', {
+        id: 'proposal-tx',
+        duration: 3000,
+      });
+      setTxPending(false);
+    }
+  }, [writeError, txPending]);
+
+  useEffect(() => {
+    const handleSuccess = async () => {
+      if (isSuccess && txPending) {
+        // Show success message
+        toast.success('Proposal created successfully!', {
+          id: 'proposal-tx',
+          duration: 3000,
+        });
+        
+        // Reset form and close modal
+        setManufacturerAddress('');
+        setDescription('');
+        onClose();
+
+        // Wait for blockchain to update and toast to be visible
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Force reload the page
+        window.location.href = window.location.href;
+      }
+    };
+
+    handleSuccess();
+  }, [isSuccess, txPending, onClose]);
+
+  // Reset txPending if transaction is not in a pending state
+  useEffect(() => {
+    if (!isPending && !isTxLoading && txPending && !isSuccess) {
+      setTxPending(false);
+    }
+  }, [isPending, isTxLoading, txPending, isSuccess]);
 
   const validateAddress = async (address: string): Promise<boolean> => {
     if (!address) {
@@ -174,16 +205,6 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
     }
 
     try {
-      const id = toast.loading('Creating proposal...', {
-        duration: Infinity,
-        style: {
-          background: '#333',
-          color: '#fff',
-          borderRadius: '10px',
-        },
-      });
-      setToastId(id);
-
       // Encode the function call for onboardNewManufacturer
       const calldata = encodeFunctionData({
         abi: nexTrackABI,
@@ -209,31 +230,26 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
     } catch (err: any) {
       console.error('Error creating proposal:', err);
       
-      if (toastId) {
-        toast.dismiss(toastId);
-        setToastId(null);
-        
-        if (err.code === 4001 || err?.info?.error?.code === 4001 || err.message?.includes('user rejected')) {
-          toast.error('Transaction cancelled', {
-            duration: 3000,
-            style: {
-              background: '#333',
-              color: '#fff',
-              borderRadius: '10px',
-            },
-          });
-        } else {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to create proposal';
-          setError(errorMessage);
-          toast.error(errorMessage, {
-            duration: 3000,
-            style: {
-              background: '#333',
-              color: '#fff',
-              borderRadius: '10px',
-            },
-          });
-        }
+      if (err.code === 4001 || err?.info?.error?.code === 4001 || err.message?.includes('user rejected')) {
+        toast.error('Transaction cancelled', {
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to create proposal';
+        setError(errorMessage);
+        toast.error(errorMessage, {
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
       }
     }
   };
@@ -248,7 +264,7 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors"
-            disabled={isPending || isProposalPending}
+            disabled={isPending || isTxLoading}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -272,12 +288,12 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
                 placeholder="0x..."
                 className="flex-1 px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-                disabled={isPending || isProposalPending}
+                disabled={isPending || isTxLoading}
               />
               <button
                 type="button"
                 onClick={useConnectedWallet}
-                disabled={!isConnected || isPending || isProposalPending}
+                disabled={!isConnected || isPending || isTxLoading}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 title={!isConnected ? 'Please connect your wallet first' : undefined}
               >
@@ -302,7 +318,7 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
               className="w-full px-4 py-2 bg-gray-900/50 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={4}
               required
-              disabled={isPending || isProposalPending}
+              disabled={isPending || isTxLoading}
             />
             {error && (
               <p className="mt-1 text-sm text-red-500">
@@ -316,16 +332,16 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
               type="button"
               onClick={onClose}
               className="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-all duration-300"
-              disabled={isPending || isProposalPending}
+              disabled={isPending || isTxLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              disabled={isPending || isProposalPending}
+              disabled={isPending || isTxLoading}
             >
-              {(isPending || isProposalPending) && (
+              {(isPending || isTxLoading) && (
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-white"></div>
               )}
               Create Proposal

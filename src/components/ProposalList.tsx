@@ -5,6 +5,7 @@ import { formatDistanceToNow, format, differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 enum ProposalState {
   Pending,
@@ -58,8 +59,46 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
   return <span className="font-mono">{timeLeft}</span>;
 }
 
-export default function ProposalList() {
+interface Props {
+  activeFilter: string;
+}
+
+export default function ProposalList({ activeFilter }: Props) {
   const { proposals, isLoading, error } = useProposals();
+
+  const handleCopyId = (id: string) => {
+    navigator.clipboard.writeText(id);
+    toast.success('Proposal ID copied to clipboard!', {
+      duration: 2000,
+      style: {
+        background: '#333',
+        color: '#fff',
+        borderRadius: '10px',
+      },
+    });
+  };
+
+  // Filter proposals based on active filter
+  const filteredProposals = proposals.filter(proposal => {
+    switch (activeFilter) {
+      case 'active':
+        return proposal.state === ProposalState.Active || proposal.state === ProposalState.Queued;
+      case 'pending':
+        return proposal.state === ProposalState.Pending;
+      case 'completed':
+        return [
+          ProposalState.Canceled,
+          ProposalState.Defeated,
+          ProposalState.Expired,
+          ProposalState.Executed
+        ].includes(proposal.state);
+      default:
+        return true; // 'all' filter
+    }
+  });
+
+  // Sort proposals by voting start time (newest first)
+  const sortedProposals = [...filteredProposals].sort((a, b) => b.voteStart.getTime() - a.voteStart.getTime());
 
   if (isLoading) {
     return (
@@ -77,16 +116,13 @@ export default function ProposalList() {
     );
   }
 
-  if (proposals.length === 0) {
+  if (sortedProposals.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500">No proposals found</p>
       </div>
     );
   }
-
-  // Sort proposals by voting start time
-  const sortedProposals = [...proposals].sort((a, b) => a.voteStart.getTime() - b.voteStart.getTime());
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -103,9 +139,20 @@ export default function ProposalList() {
           >
             {/* Proposal ID Badge */}
             <div className="absolute -top-3 left-6">
-              <span className="px-3 py-1 bg-gray-900/90 rounded-full text-xs font-semibold text-gray-400 border border-gray-700">
-                Proposal #{proposal.id}
-              </span>
+              <button 
+                onClick={() => handleCopyId(proposal.id)}
+                className="px-3 py-1 bg-gray-900/90 rounded-full text-xs font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
+              >
+                <span>Proposal #{proposal.id}</span>
+                <svg 
+                  className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                </svg>
+              </button>
             </div>
 
             <div className="flex justify-between items-start mt-3 mb-6">

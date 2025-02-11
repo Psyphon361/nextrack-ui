@@ -14,8 +14,8 @@ import toast, { Toaster } from 'react-hot-toast';
 const provider = new ethers.JsonRpcProvider(ELECTRONEUM_TESTNET_CONFIG.rpcUrls[0]);
 
 // Contract addresses
-const VAULT_ADDRESS = '0x7ecaB32D14E7E6af68B107C6DA485c9874017DeD';
-const MUSDT_ADDRESS = '0x0EC9f3De36E5E65Ba30464529386e153898e2C4C';
+const VAULT_ADDRESS = '0x1bedbF0181F86C77f5d2F0019683a1ccF058b194';
+const MUSDT_ADDRESS = '0xb7a27458dCb1d558d08dD1080Fd7f61C7f1a0033';
 
 // Create contract instances
 const contract = new ethers.Contract(

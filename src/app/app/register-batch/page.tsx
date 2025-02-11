@@ -49,7 +49,7 @@ export default function RegisterBatchPage() {
 
       // Convert values to appropriate types
       const quantity = ethers.parseUnits(formData.totalQuantity, 0); // No decimals for quantity
-      const price = ethers.parseUnits(formData.unitPrice, 0); // Convert to wei, 6 decimals for mUSDT
+      const price = ethers.parseUnits(formData.unitPrice, 18); // Convert to wei, 6 decimals for mUSDT
 
       // Register the batch
       const tx = await contract.registerProductBatch(

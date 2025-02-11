@@ -110,22 +110,20 @@ const EditPriceModal = ({ isOpen, onClose, onSubmit, currentPrice, isTransaction
           <button
             onClick={onClose}
             disabled={isTransactionPending}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-              isTransactionPending 
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+            className={`px-4 py-2 rounded-lg transition-all duration-300 ${isTransactionPending
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 : 'bg-gray-700/50 text-white hover:bg-gray-600/50'
-            }`}
+              }`}
           >
             Cancel
           </button>
           <button
             onClick={() => onSubmit(price)}
             disabled={isTransactionPending}
-            className={`px-4 py-2 rounded-lg text-white transition-all duration-300 flex items-center justify-center ${
-              isTransactionPending
+            className={`px-4 py-2 rounded-lg text-white transition-all duration-300 flex items-center justify-center ${isTransactionPending
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 cursor-not-allowed'
                 : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'
-            }`}
+              }`}
           >
             {isTransactionPending ? (
               <>
@@ -188,7 +186,7 @@ export default function MyBatchesPage() {
         const isUserManufacturer = manufacturers
           .map(addr => addr.toLowerCase())
           .includes(address.toLowerCase());
-        
+
         setIsManufacturer(isUserManufacturer);
       } catch (error) {
         console.error('Error checking manufacturer status:', error);
@@ -202,10 +200,10 @@ export default function MyBatchesPage() {
   useEffect(() => {
     let mounted = true;
     console.log('useEffect triggered with:', { address, contractAddress });
-    
+
     async function fetchBatchData() {
       if (!mounted) return;
-      
+
       console.log('=== Starting batch data fetch ===');
       console.log('Connected wallet:', address);
       console.log('Contract address:', contractAddress);
@@ -343,24 +341,24 @@ export default function MyBatchesPage() {
       );
 
       console.log('Delisting batch:', batchId.toString());
-      
+
       // Call the delist function
       const tx = await contract.delistProductBatch(batchId);
       console.log('Transaction sent:', tx.hash);
-      
+
       // Wait for transaction to be mined
       await tx.wait();
       console.log('Transaction confirmed');
 
       // Update the local state
-      setBatches(prevBatches => 
-        prevBatches.map(batch => 
-          batch.batchId === batchId 
+      setBatches(prevBatches =>
+        prevBatches.map(batch =>
+          batch.batchId === batchId
             ? { ...batch, isListed: false }
             : batch
         )
       );
-      
+
       toast.success('Batch delisted successfully', {
         id: toastId,
         duration: 5000,
@@ -402,7 +400,7 @@ export default function MyBatchesPage() {
     if (!walletClient || !address || isTransactionPending) return;
 
     setIsTransactionPending(true);
-    const toastId = toast.loading('Relisting batch...', {
+    const toastId = toast.loading('Listing batch...', {
       duration: Infinity,
       style: {
         background: '#333',
@@ -422,26 +420,26 @@ export default function MyBatchesPage() {
         await signer
       );
 
-      console.log('Relisting batch:', batchId.toString());
-      
+      console.log('Listing batch:', batchId.toString());
+
       // Call the list function
       const tx = await contract.listProductBatch(batchId);
       console.log('Transaction sent:', tx.hash);
-      
+
       // Wait for transaction to be mined
       await tx.wait();
       console.log('Transaction confirmed');
 
       // Update the local state
-      setBatches(prevBatches => 
-        prevBatches.map(batch => 
-          batch.batchId === batchId 
+      setBatches(prevBatches =>
+        prevBatches.map(batch =>
+          batch.batchId === batchId
             ? { ...batch, isListed: true }
             : batch
         )
       );
-      
-      toast.success('Batch relisted successfully', {
+
+      toast.success('Batch Listed successfully', {
         id: toastId,
         duration: 5000,
         style: {
@@ -451,7 +449,7 @@ export default function MyBatchesPage() {
         },
       });
     } catch (err) {
-      console.error('Error relisting batch:', err);
+      console.error('Error Listing batch:', err);
       if (err.code === 4001 || err?.info?.error?.code === 4001 || err.message?.includes('user rejected')) {
         toast.error('Transaction cancelled', {
           id: toastId,
@@ -463,7 +461,7 @@ export default function MyBatchesPage() {
           },
         });
       } else {
-        toast.error('Failed to relist batch', {
+        toast.error('Failed to List batch', {
           id: toastId,
           duration: 3000,
           style: {
@@ -479,10 +477,10 @@ export default function MyBatchesPage() {
   };
 
   const updateLocalBatchPrice = (batchId: string, newPrice: bigint) => {
-    setBatches(prevBatches => 
-      prevBatches.map(batch => 
-        batch.batchId.toString() === batchId 
-          ? { ...batch, unitPrice: newPrice } 
+    setBatches(prevBatches =>
+      prevBatches.map(batch =>
+        batch.batchId.toString() === batchId
+          ? { ...batch, unitPrice: newPrice }
           : batch
       )
     );
@@ -496,10 +494,10 @@ export default function MyBatchesPage() {
 
     try {
       setIsTransactionPending(true);
-      
+
       // Use parseUnits with 0 precision to pass the exact input
-      const priceInWei = ethers.parseUnits(newPrice, 0);
-      
+      const priceInWei = ethers.parseUnits(newPrice, 18);
+
       // Create contract instance with signer
       const signer = new ethers.BrowserProvider(window.ethereum as any).getSigner();
       const batchContract = new ethers.Contract(
@@ -510,7 +508,7 @@ export default function MyBatchesPage() {
 
       console.log('Updating price for batch:', editingBatch.id);
       console.log('New price (USD):', priceInWei.toString());
-      
+
       // Call the update price function with USD value directly
       const tx = await batchContract.updateBatchUnitPrice(
         BigInt(editingBatch.id),
@@ -541,13 +539,10 @@ export default function MyBatchesPage() {
             borderRadius: '10px',
           },
         });
-        
-        // Refresh page after successful transaction
-        window.location.reload();
-        
+
         // Update local state to reflect the new price
         updateLocalBatchPrice(editingBatch.id, priceInWei);
-        
+
         // Close modal and reset editing state
         setEditingBatch(null);
       } else {
@@ -565,7 +560,7 @@ export default function MyBatchesPage() {
     } catch (error) {
       console.error(`Error updating price:`, error);
       const errorMessage = (error as Error).message || '';
-      
+
       if (errorMessage.includes('user rejected') || errorMessage.includes('User denied')) {
         toast.error('Transaction rejected', {
           duration: 3000,
@@ -593,7 +588,7 @@ export default function MyBatchesPage() {
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-        <Toaster 
+        <Toaster
           position="top-center"
           toastOptions={{
             style: {
@@ -618,8 +613,8 @@ export default function MyBatchesPage() {
         />
         <Navigation />
         <div className="container mx-auto px-6 py-8">
-          <h1 
-            className="text-4xl font-bold font-['Space_Grotesk']" 
+          <h1
+            className="text-4xl font-bold font-['Space_Grotesk']"
             style={{
               background: 'linear-gradient(to right, #60a5fa, #a855f7)',
               WebkitBackgroundClip: 'text',
@@ -637,7 +632,7 @@ export default function MyBatchesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      <Toaster 
+      <Toaster
         position="top-center"
         toastOptions={{
           style: {
@@ -670,21 +665,21 @@ export default function MyBatchesPage() {
           </h1>
           {isManufacturer && (
             <div className="relative w-full md:w-auto mt-4 md:mt-0">
-              <a 
+              <a
                 href="/app/register-batch"
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-semibold text-white transition-all duration-300 group"
               >
-                <svg 
-                  className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24" 
+                <svg
+                  className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
@@ -697,36 +692,33 @@ export default function MyBatchesPage() {
         <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setFilter('all')}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              filter === 'all'
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${filter === 'all'
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             All
           </button>
           <button
             onClick={() => setFilter('listed')}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              filter === 'listed'
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${filter === 'listed'
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Listed
           </button>
           <button
             onClick={() => setFilter('delisted')}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              filter === 'delisted'
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${filter === 'delisted'
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Delisted
           </button>
         </div>
-        
+
         {isLoading ? (
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -744,17 +736,16 @@ export default function MyBatchesPage() {
                 return true;
               })
               .map((batch) => (
-                <div 
-                  key={batch.batchId.toString()} 
+                <div
+                  key={batch.batchId.toString()}
                   className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group relative"
                 >
                   {/* Glowing dot indicator */}
-                  <div 
-                    className={`absolute top-4 right-4 w-3 h-3 rounded-full ${
-                      batch.isListed 
-                        ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.7)]' 
+                  <div
+                    className={`absolute top-4 right-4 w-3 h-3 rounded-full ${batch.isListed
+                        ? 'bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.7)]'
                         : 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.7)]'
-                    }`}
+                      }`}
                   ></div>
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
@@ -782,7 +773,7 @@ export default function MyBatchesPage() {
                             <div className="flex items-center space-x-2">
                               <p className="text-white font-semibold text-lg">{formatPrice(batch.unitPrice)}</p>
                               <button
-                                onClick={() => setEditingBatch({ 
+                                onClick={() => setEditingBatch({
                                   id: batch.batchId.toString(),
                                   price: (Number(batch.unitPrice) / 1e18).toString()
                                 })}
@@ -805,11 +796,10 @@ export default function MyBatchesPage() {
                                 <button
                                   onClick={() => handleDelist(batch.batchId)}
                                   disabled={isTransactionPending}
-                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${
-                                    isTransactionPending
+                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${isTransactionPending
                                       ? 'bg-gray-600 cursor-not-allowed'
                                       : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white'
-                                  }`}
+                                    }`}
                                 >
                                   Delist
                                 </button>
@@ -817,13 +807,12 @@ export default function MyBatchesPage() {
                                 <button
                                   onClick={() => handleRelist(batch.batchId)}
                                   disabled={isTransactionPending}
-                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${
-                                    isTransactionPending
+                                  className={`px-3 py-1 rounded-lg text-sm transition-all duration-300 ${isTransactionPending
                                       ? 'bg-gray-600 cursor-not-allowed'
                                       : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white'
-                                  }`}
+                                    }`}
                                 >
-                                  Relist
+                                  List
                                 </button>
                               )}
                             </div>
