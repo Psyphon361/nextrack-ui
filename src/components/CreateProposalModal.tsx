@@ -11,8 +11,8 @@ interface CreateProposalModalProps {
   onClose: () => void;
 }
 
-const GOVERNOR_ADDRESS = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13';
-const NEXTRACK_ADDRESS = '0x8439D9087b5E27a6cCEbe796274c2557a2180159';
+const GOVERNOR_ADDRESS = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801';
+const NEXTRACK_ADDRESS = '0xCE4F858Fb32Ce77309519f4687836BcbA5Ad301d';
 
 // ABI for contract functions
 const nexTrackABI = [{

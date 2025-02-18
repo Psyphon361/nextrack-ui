@@ -32,7 +32,7 @@ const contract = new ethers.Contract(
   CONTRACT_ADDRESSES.NEXTRACK,
   [
     'function getCurrentInventory(address owner) view returns (uint256[])',
-    'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, bool isListed, uint256 parentBatch, uint256 timestamp))'
+    'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, string ipfsUrl, bool isListed, uint256 parentBatch, uint256 timestamp))'
   ],
   provider
 );
@@ -755,6 +755,18 @@ export default function MyBatchesPage() {
                         </h3>
                         <p className="text-gray-300 text-sm mb-4 line-clamp-2">{batch.description}</p>
                       </div>
+                      <div className="text-right mt-6">
+                        <div className="text-gray-400 text-sm mb-1">Batch ID</div>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(batch.batchId.toString());
+                            toast.success('Batch ID copied to clipboard');
+                          }}
+                          className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded hover:bg-blue-600/50 transition-colors"
+                        >
+                          {batch.batchId.toString()}
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
@@ -790,7 +802,7 @@ export default function MyBatchesPage() {
                             <p className="text-gray-400 text-sm mb-1">Status</p>
                             <div className="flex items-center space-x-2">
                               <span className={`font-semibold text-md ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
-                                {batch.isListed ? 'Listed' : 'Delisted'}
+                                {batch.isListed ? 'Listed' : 'Not Listed'}
                               </span>
                               {batch.isListed ? (
                                 <button

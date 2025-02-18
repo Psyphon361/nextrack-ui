@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 
-const GOVERNOR_ADDRESS = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13';
+const GOVERNOR_ADDRESS = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801';
 const RPC_URL = 'https://rpc.ankr.com/electroneum_testnet/15266e093685caca47b9a524ba83c22259a0590c105a2b4c5c5b2a7c2d0c7f0c';
 const BLOCK_TIME = 5; // Electroneum block time in seconds
 const DEBOUNCE_TIME = 2000; // 2 seconds debounce for refreshing

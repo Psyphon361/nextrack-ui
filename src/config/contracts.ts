@@ -11,7 +11,7 @@ export const ELECTRONEUM_TESTNET_CONFIG = {
 };
 
 export const CONTRACT_ADDRESSES = {
-  NEXTRACK: '0x8439D9087b5E27a6cCEbe796274c2557a2180159',
+  NEXTRACK: '0xCE4F858Fb32Ce77309519f4687836BcbA5Ad301d',
 } as const;
 
 export const CONTRACT_ABIS = {
@@ -25,7 +25,8 @@ export const CONTRACT_ABIS = {
         { name: 'description', type: 'string' },
         { name: 'category', type: 'uint8' },
         { name: 'totalQuantity', type: 'uint256' },
-        { name: 'unitPrice', type: 'uint256' }
+        { name: 'unitPrice', type: 'uint256' },
+        { name: 'ipfsUrl', type: 'string' }
       ],
       outputs: []
     },

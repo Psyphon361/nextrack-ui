@@ -9,20 +9,21 @@ import { SearchIcon } from '@/components/icons';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/contracts';
 import { ELECTRONEUM_TESTNET_CONFIG } from '@/config/contracts';
 import toast, { Toaster } from 'react-hot-toast';
+import Image from 'next/image';
 
 // Create ethers provider and contract outside component
 const provider = new ethers.JsonRpcProvider(ELECTRONEUM_TESTNET_CONFIG.rpcUrls[0]);
 
 // Contract addresses
-const VAULT_ADDRESS = '0x1bedbF0181F86C77f5d2F0019683a1ccF058b194';
-const MUSDT_ADDRESS = '0xb7a27458dCb1d558d08dD1080Fd7f61C7f1a0033';
+const VAULT_ADDRESS = '0x59D467bD367A92b973Df0D6E3Da2b3f0Ad6546e7';
+const MUSDT_ADDRESS = '0xD7eAaa515F1a3cF0Cbf24a8Ed283489E93442E58';
 
 // Create contract instances
 const contract = new ethers.Contract(
   CONTRACT_ADDRESSES.NEXTRACK,
   [
     'function getAllBatchIds() view returns (uint256[])',
-    'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, bool isListed, uint256 parentBatch, uint256 timestamp))',
+    'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, string ipfsUrl, bool isListed, uint256 parentBatch, uint256 timestamp))',
     'function requestProductBatch(uint256 batchId, uint256 quantityRequested) returns (uint256)',
     'function getRegisteredManufacturers() view returns (address[])'
   ],
@@ -72,6 +73,7 @@ interface ProductListing {
   parentBatch: bigint;
   timestamp: bigint;
   isVerifiedManufacturer: boolean;
+  ipfsUrl: string;
 }
 
 interface RequestQuantity {
@@ -158,6 +160,7 @@ export default function MarketplacePage() {
               parentBatch: BigInt(details.parentBatch.toString()),
               timestamp: BigInt(details.timestamp.toString()),
               isVerifiedManufacturer: registeredManufacturers.includes(details.owner),
+              ipfsUrl: details.ipfsUrl || '',
             };
             batchDetails.push(listing);
           }
@@ -244,7 +247,7 @@ export default function MarketplacePage() {
 
     // Check if the user is trying to order their own listing
     if (listing.owner.toLowerCase() === signerAddress.toLowerCase()) {
-      toast.error('Cannot request self-listed products', {
+      toast.error('Cannot request own products', {
         style: {
           background: '#333',
           color: '#fff',
@@ -302,7 +305,7 @@ export default function MarketplacePage() {
         [
           'function requestProductBatch(uint256 batchId, uint256 quantityRequested) returns (uint256)',
           'function getAllBatchIds() view returns (uint256[])',
-          'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, bool isListed, uint256 parentBatch, uint256 timestamp))',
+          'function getBatchDetails(uint256 batchId) view returns (tuple(uint256 batchId, string name, string description, uint8 category, address owner, uint256 totalQuantity, uint256 unitPrice, bool isListed, uint256 parentBatch, uint256 timestamp, string ipfsUrl))',
           'function getRegisteredManufacturers() view returns (address[])'
         ],
         signer
@@ -494,22 +497,53 @@ export default function MarketplacePage() {
       });
   }, [listings, activeTab, registeredManufacturers, searchQuery]);
 
-  const renderListing = (listing: ProductListing) => {
-    return (
-      <div
-        key={listing.batchId.toString()}
-        className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group"
-      >
-        <div className="space-y-4">
-           <div className="flex justify-between items-start">
-            <div className="flex-grow pr-4">
-              <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+  const renderListing = (listing: ProductListing) => (
+    <div
+      key={listing.batchId.toString()}
+      className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-xl p-4 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group"
+    >
+      <div className="flex flex-col h-full">
+        {/* Product Image */}
+        <div className="relative w-full h-40 mb-3 overflow-hidden rounded-lg bg-gray-800">
+          {listing.ipfsUrl ? (
+            <Image
+              src={listing.ipfsUrl}
+              alt={listing.name}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-gray-600">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-10 h-10"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+
+        {/* Product Details */}
+        <div className="space-y-3">
+          <div className="flex justify-between items-start gap-2">
+            <div className="flex-grow">
+              <h3 className="text-xl font-bold text-white mb-2">
                 {listing.name}
               </h3>
-              <p className="text-gray-300 text-sm mb-4 line-clamp-2">{listing.description}</p>
+              <p className="text-gray-300 text-sm line-clamp-2">{listing.description}</p>
             </div>
-            <div className="text-right">
-              <div className="text-gray-400 text-sm mb-1">Batch ID</div>
+            <div className="text-right shrink-0">
+              <div className="text-gray-400 text-sm">Batch ID</div>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(listing.batchId.toString());
@@ -522,177 +556,161 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
+          <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
-              <p className="text-gray-400 text-sm mb-1">Price per unit</p>
-              <p className="text-white font-semibold text-lg">
-                ${(Number(listing.unitPrice) / 1e18).toFixed(2)}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-gray-400 text-sm mb-1">Available Quantity</p>
-              <p className="text-white font-semibold text-lg">
-                {listing.totalQuantity.toString()}
-              </p>
-            </div>
-            <div className="col-span-2 border-t border-gray-700/30 pt-4">
-              <p className="text-gray-400 text-sm mb-1">Seller</p>
-              <button 
+              <div className="text-gray-400 text-sm">Seller</div>
+              <button
                 onClick={() => {
-                  navigator.clipboard.writeText(listing.owner.toString());
-                  toast.success('Address copied to clipboard');
+                  navigator.clipboard.writeText(listing.owner);
+                  toast.success('Seller address copied to clipboard');
                 }}
-                className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
+                className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded hover:bg-blue-600/50 transition-colors"
               >
                 {listing.owner.toString()}
               </button>
             </div>
+            <div className="text-right">
+              <div className="text-gray-400 text-sm">Price per unit</div>
+              <p className="text-white font-semibold text-base">
+                ${(Number(listing.unitPrice) / 1e18).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <div className="text-gray-400 text-sm">Category</div>
+              <p className="text-white font-semibold text-base">
+                {listing.category}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-gray-400 text-sm">Available Quantity</p>
+              <p className="text-white font-semibold text-base">
+                {listing.totalQuantity.toString()}
+              </p>
+            </div>
           </div>
 
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3">
+          <div className="space-y-2">
+            <div className="flex justify-center gap-6">
+              <div className="w-1/4"></div>
               <input
                 type="number"
-                placeholder="Enter quantity"
+                min="1"
+                max={listing.totalQuantity.toString()}
                 value={requestQuantities[listing.batchId.toString()] || ''}
                 onChange={(e) => handleQuantityChange(listing, e)}
-                className="flex-1 px-3 py-2 rounded-lg bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                placeholder="Enter quantity"
+                className="w-56 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={() => handleRequestProducts(listing)}
                 disabled={!requestQuantities[listing.batchId.toString()] || isRequesting}
-                className={`flex-1 rounded-lg font-medium transition-all duration-300 py-2 px-4 ${
+                className={`w-56 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center px-3 py-2 ${
                   !requestQuantities[listing.batchId.toString()] || isRequesting
-                    ? 'bg-gray-600 cursor-not-allowed'
+                    ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
                 }`}
               >
                 {isRequesting ? (
                   <span className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-1"></div>
                     Requesting...
                   </span>
                 ) : (
                   'Request'
                 )}
               </button>
+              <div className="w-1/4"></div>
             </div>
+
             {requestQuantities[listing.batchId.toString()] && (
-              <div className="text-right text-gray-400 text-sm">
-                Total: ${((Number(listing.unitPrice) / 1e18) * Number(requestQuantities[listing.batchId.toString()])).toFixed(2)}
+              <div className="text-right text-gray-400 text-xs">
+                Total: ${(Number(listing.unitPrice) * Number(requestQuantities[listing.batchId.toString()]) / 1e18).toFixed(2)}
               </div>
             )}
           </div>
         </div>
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+      <Navigation />
       <Toaster 
         position="top-center"
         toastOptions={{
+          duration: 3000,
           style: {
             background: '#333',
             color: '#fff',
             borderRadius: '10px',
           },
-          success: {
-            iconTheme: {
-              primary: '#4ade80',
-              secondary: '#fff',
-            },
-          },
-          error: {
-            iconTheme: {
-              primary: '#ef4444',
-              secondary: '#fff',
-            },
-          },
-          loading: {
-            duration: Infinity,
-          },
         }}
       />
-      <Navigation />
       <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-            Marketplace
-          </h1>
-          {walletClient && (
-            <div className="flex items-center space-x-4 bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-xl px-5 py-2.5 shadow-md border border-gray-700/30">
-              <span className="text-gray-300 font-medium text-sm tracking-wider">
-                Balances:
-              </span>
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-white font-semibold">
-                    {Number(userBalances.mUSDT).toLocaleString()}
-                  </span>
-                  <span className="text-gray-400 text-sm">mUSDT</span>
-                </div>
-                <div className="h-4 w-px bg-gray-600"></div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-white font-semibold">
-                    {Number(userBalances.ETN).toLocaleString()}
-                  </span>
-                  <span className="text-gray-400 text-sm">ETN</span>
-                </div>
-              </div>
+        <div className="flex flex-col space-y-6">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+            <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              Marketplace
+            </h1>
+
+            <div className="bg-gray-800/50 border border-gray-700/30 rounded-xl px-4 py-2">
+              <span className="text-gray-400">Balances:</span>
+              <span className="text-white ml-2">{userBalances.mUSDT} mUSDT</span>
+              <span className="text-white ml-4">{userBalances.ETN} ETN</span>
             </div>
-          )}
-          <div className="relative w-full md:w-96 mt-4 md:mt-0">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search products..."
-              className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 pl-10"
-            />
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none w-full md:w-64 transition-all duration-300"
+              />
+              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            </div>
           </div>
-        </div>
 
-        <div className="flex space-x-4 mb-8">
-          <button
-            onClick={() => setActiveTab('verified')}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              activeTab === 'verified'
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
-          >
-            Verified Manufacturers
-          </button>
-          <button
-            onClick={() => setActiveTab('other')}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              activeTab === 'other'
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
-          >
-            Other Sellers
-          </button>
-        </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={() => setActiveTab('verified')}
+              className={`px-6 py-2 rounded-xl transition-all duration-300 ${
+                activeTab === 'verified'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+            >
+              Verified Manufacturers
+            </button>
+            <button
+              onClick={() => setActiveTab('other')}
+              className={`px-6 py-2 rounded-xl transition-all duration-300 ${
+                activeTab === 'other'
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+              }`}
+            >
+              Other Sellers
+            </button>
+          </div>
 
-        <main>
+          {/* Listings Grid */}
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
-              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
             </div>
-          ) : filteredListings.length === 0 ? (
-            <div className="text-center text-gray-400 py-12">
-              <p className="text-lg">No products found for this search query</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          ) : filteredListings.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {filteredListings.map(renderListing)}
             </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-400 text-lg">No products found</p>
+            </div>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

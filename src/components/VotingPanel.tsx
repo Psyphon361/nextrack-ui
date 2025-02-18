@@ -68,8 +68,8 @@ const govTokenABI = [{
   outputs: []
 }] as const;
 
-const govTokenAddress = '0x42Ba3102b25bC67616Aa7F2b93Cde753965E2126' as Address;
-const governorAddress = '0x2dE179f3696cE4e3DfFC4BD9AE8757094B348c13' as Address;
+const govTokenAddress = '0x49BF52204B9475e76c8c0Bf674670c6bde8e9a9e' as Address;
+const governorAddress = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801' as Address;
 
 const governorABI = [{
   name: 'castVote',
