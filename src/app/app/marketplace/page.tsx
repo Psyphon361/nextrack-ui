@@ -238,6 +238,22 @@ export default function MarketplacePage() {
       return;
     }
 
+    // Create signer instance first to get user's address
+    const signer = await new ethers.BrowserProvider(window.ethereum as any).getSigner();
+    const signerAddress = await signer.getAddress();
+
+    // Check if the user is trying to order their own listing
+    if (listing.owner.toLowerCase() === signerAddress.toLowerCase()) {
+      toast.error('Cannot request self-listed products', {
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '10px',
+        },
+      });
+      return;
+    }
+
     const quantity = requestQuantities[listing.batchId.toString()];
     if (!quantity || Number(quantity) <= 0) {
       console.error('Invalid quantity:', quantity);
@@ -270,9 +286,6 @@ export default function MarketplacePage() {
 
     try {
       // Create contract instances with signer
-      const signer = await new ethers.BrowserProvider(window.ethereum as any).getSigner();
-      const signerAddress = await signer.getAddress();
-      
       const musdtWithSigner = new ethers.Contract(
         MUSDT_ADDRESS,
         [

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useAccount, useConnect, usePublicClient } from "wagmi";
 import { injected } from "wagmi/connectors";
 import Link from 'next/link';
@@ -8,11 +8,25 @@ import CreateProposalModal from "@/components/CreateProposalModal";
 import ProposalList from "@/components/ProposalList";
 import { Toaster } from 'react-hot-toast';
 import Navigation from '@/components/Navigation';
+import { useProposals } from "@/hooks/useProposals";
+
+enum ProposalState {
+  Pending,
+  Active,
+  Canceled,
+  Defeated,
+  Succeeded,
+  Queued,
+  Expired,
+  Executed
+}
 
 const DAOPage = () => {
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
+  const publicClient = usePublicClient();
   const [isConnecting, setIsConnecting] = useState(false);
+  const { proposals, isLoading } = useProposals();
   const [activeTab, setActiveTab] = useState("all");
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 
@@ -30,6 +44,37 @@ const DAOPage = () => {
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
+
+  // Filter proposals based on active tab
+  const filteredProposals = useMemo(() => {
+    if (!proposals) return [];
+    
+    if (activeTab === 'all') return proposals;
+
+    return proposals.filter(proposal => {
+      const state = proposal.state;
+      switch (activeTab) {
+        case 'pending':
+          return state === ProposalState.Pending;
+        case 'active':
+          return state === ProposalState.Active;
+        case 'succeeded':
+          return state === ProposalState.Succeeded;
+        case 'queued':
+          return state === ProposalState.Queued;
+        case 'executed':
+          return state === ProposalState.Executed;
+        case 'defeated':
+          return state === ProposalState.Defeated;
+        case 'expired':
+          return state === ProposalState.Expired;
+        case 'canceled':
+          return state === ProposalState.Canceled;
+        default:
+          return true;
+      }
+    });
+  }, [proposals, activeTab]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white pb-12">
@@ -86,10 +131,10 @@ const DAOPage = () => {
         {/* Tabs Navigation */}
         <div className="border-b border-gray-700/50 mb-8">
           <nav className="flex justify-between items-center">
-            <div className="flex space-x-8">
+            <div className="flex space-x-8 overflow-x-auto pb-2">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg ${
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
                   activeTab === "all"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -98,18 +143,8 @@ const DAOPage = () => {
                 All Proposals
               </button>
               <button
-                onClick={() => setActiveTab("active")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg ${
-                  activeTab === "active"
-                    ? "border-blue-500 text-blue-400"
-                    : "border-transparent text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                Active
-              </button>
-              <button
                 onClick={() => setActiveTab("pending")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg ${
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
                   activeTab === "pending"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -118,14 +153,74 @@ const DAOPage = () => {
                 Pending
               </button>
               <button
-                onClick={() => setActiveTab("completed")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg ${
-                  activeTab === "completed"
+                onClick={() => setActiveTab("active")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "active"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
                 }`}
               >
-                Completed
+                Active
+              </button>
+              <button
+                onClick={() => setActiveTab("succeeded")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "succeeded"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Succeeded
+              </button>
+              <button
+                onClick={() => setActiveTab("queued")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "queued"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Queued
+              </button>
+              <button
+                onClick={() => setActiveTab("executed")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "executed"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Executed
+              </button>
+              <button
+                onClick={() => setActiveTab("defeated")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "defeated"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Defeated
+              </button>
+              <button
+                onClick={() => setActiveTab("expired")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "expired"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Expired
+              </button>
+              <button
+                onClick={() => setActiveTab("canceled")}
+                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                  activeTab === "canceled"
+                    ? "border-blue-500 text-blue-400"
+                    : "border-transparent text-gray-400 hover:text-gray-300"
+                }`}
+              >
+                Canceled
               </button>
             </div>
             
@@ -143,15 +238,11 @@ const DAOPage = () => {
         {/* Main Content Area */}
         <div className="space-y-6">
           {!isConnected ? (
-            <div className="text-center py-16">
-              <h2 className="text-3xl font-bold mb-4">Connect Your Wallet</h2>
-              <p className="text-xl text-gray-300 mb-8">
-                Please connect your wallet to participate in DAO governance
-              </p>
+            <div className="text-center py-12">
               <button
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold text-lg transition-all duration-300 disabled:opacity-50"
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300"
               >
                 {isConnecting ? 'Connecting...' : 'Connect Wallet'}
               </button>
@@ -159,7 +250,7 @@ const DAOPage = () => {
           ) : (
             <>
               {/* Proposal List */}
-              <ProposalList activeFilter={activeTab} />
+              <ProposalList proposals={filteredProposals} isLoading={isLoading} />
             </>
           )}
         </div>

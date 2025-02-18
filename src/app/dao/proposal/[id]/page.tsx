@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, differenceInSeconds } from 'date-fns';
 import { motion } from 'framer-motion';
 import { toast, Toaster } from 'react-hot-toast';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
@@ -73,6 +73,7 @@ const getStateColor = (state: ProposalState) => {
     case ProposalState.Defeated:
       return 'bg-red-500/20 text-red-400 border-red-500/30';
     case ProposalState.Canceled:
+      return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     case ProposalState.Expired:
       return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     case ProposalState.Queued:
@@ -129,51 +130,23 @@ const formatTimestamp = (timestamp: string | number | undefined): string => {
   }
 };
 
-function CountdownTimer({ timestamp, state }: { timestamp: string | number; state: number }) {
+function CountdownTimer({ targetDate, type }: { targetDate: Date, type: 'start' | 'end' }) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
-    // If proposal is beyond Active state, show Ended
-    if (state > ProposalState.Active) {
-      setTimeLeft('Ended');
-      return;
-    }
-
-    // If proposal is Active, show Started
-    if (state === ProposalState.Active) {
-      setTimeLeft('Started');
-      return;
-    }
-
-    const timestampNum = typeof timestamp === 'string' ? Number(timestamp) : timestamp;
-    const now = Math.floor(Date.now() / 1000);
-
-    if (timestampNum <= now) {
-      setTimeLeft('Started');
-      return;
-    }
-
     const timer = setInterval(() => {
-      const now = Math.floor(Date.now() / 1000);
-      const difference = timestampNum - now;
-
-      if (difference <= 0) {
-        setTimeLeft('Started');
+      const seconds = differenceInSeconds(targetDate, new Date());
+      if (seconds <= 0) {
+        setTimeLeft(type === 'start' ? 'Started' : 'Ended');
         clearInterval(timer);
-        return;
+      } else {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        setTimeLeft(`${minutes}m ${remainingSeconds}s`);
       }
-
-      const days = Math.floor(difference / (24 * 60 * 60));
-      const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
-      const minutes = Math.floor((difference % (60 * 60)) / 60);
-
-      setTimeLeft(
-        `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`
-      );
     }, 1000);
-
     return () => clearInterval(timer);
-  }, [timestamp, state]);
+  }, [targetDate, type]);
 
   return <span className="font-mono">{timeLeft}</span>;
 }
@@ -188,27 +161,31 @@ function CopyableAddress({ address, label }: { address: string; label: string })
   };
 
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-gray-400">{label}</h3>
-      <button
+    <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-base font-medium text-gray-400 uppercase tracking-wider">{label}</p>
+        <button 
+          onClick={handleCopy}
+          className="text-gray-400 hover:text-white transition-colors duration-300"
+          aria-label="Copy address"
+        >
+          {copied ? (
+            <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          )}
+        </button>
+      </div>
+      <div 
         onClick={handleCopy}
-        className="group relative w-full text-left px-4 py-3 bg-gray-900/50 hover:bg-gray-900/70 rounded-xl border border-gray-700/50 transition-all duration-200"
+        className="text-lg font-semibold text-white cursor-pointer hover:text-blue-400 transition-colors duration-300 break-all"
       >
-        <div className="flex items-center justify-between">
-          <p className="text-white text-sm break-all pr-8">{address}</p>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            {copied ? (
-              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-              </svg>
-            )}
-          </div>
-        </div>
-      </button>
+        {address}
+      </div>
     </div>
   );
 }
@@ -227,7 +204,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
     <div className="space-y-8">
       <div className="grid gap-6">
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm mb-2">
+          <div className="flex items-center justify-between text-lg mb-2">
             <span className="font-medium text-green-400">For</span>
             <div className="flex items-center space-x-2">
               <span className="font-mono">{Number(forVotes).toLocaleString()}</span>
@@ -237,7 +214,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
             </div>
           </div>
           <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-500"
               style={{ width: `${forPercentage}%` }}
             />
@@ -245,7 +222,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm mb-2">
+          <div className="flex items-center justify-between text-lg mb-2">
             <span className="font-medium text-red-400">Against</span>
             <div className="flex items-center space-x-2">
               <span className="font-mono">{Number(againstVotes).toLocaleString()}</span>
@@ -255,7 +232,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
             </div>
           </div>
           <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-red-500 to-red-400 rounded-full transition-all duration-500"
               style={{ width: `${againstPercentage}%` }}
             />
@@ -263,7 +240,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
         </div>
 
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm mb-2">
+          <div className="flex items-center justify-between text-lg mb-2">
             <span className="font-medium text-gray-400">Abstain</span>
             <div className="flex items-center space-x-2">
               <span className="font-mono">{Number(abstainVotes).toLocaleString()}</span>
@@ -273,7 +250,7 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
             </div>
           </div>
           <div className="h-2.5 bg-gray-700/50 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-to-r from-gray-500 to-gray-400 rounded-full transition-all duration-500"
               style={{ width: `${abstainPercentage}%` }}
             />
@@ -499,6 +476,10 @@ export default function ProposalDetails() {
   useEffect(() => {
     if (!isPending && !isTxLoading && txPending && !isSuccess) {
       setTxPending(false);
+      toast.error('Transaction rejected', {
+        id: 'gov-tx',
+        duration: 3000,
+      });
     }
   }, [isPending, isTxLoading, txPending, isSuccess]);
 
@@ -518,6 +499,9 @@ export default function ProposalDetails() {
       });
 
       const descriptionHash = keccak256(toBytes(proposal.description));
+      
+      // Ensure values array has same length as targets with proper BigInt zeros
+      const values = proposal.targets.map(() => BigInt(0));
 
       writeContract({
         address: governorAddress,
@@ -525,7 +509,7 @@ export default function ProposalDetails() {
         functionName: 'queue',
         args: [
           proposal.targets as `0x${string}`[],
-          proposal.values,
+          values,
           proposal.calldatas as `0x${string}`[],
           descriptionHash,
         ],
@@ -547,12 +531,15 @@ export default function ProposalDetails() {
 
       console.log('Executing proposal with data:', {
         targets: proposal.targets,
-        values: proposal.values.map(v => v.toString()),
+        values: proposal.values,
         calldatas: proposal.calldatas,
         description: proposal.description
       });
 
       const descriptionHash = keccak256(toBytes(proposal.description));
+      
+      // Ensure values array has same length as targets with proper BigInt zeros
+      const values = proposal.targets.map(() => BigInt(0));
 
       writeContract({
         address: governorAddress,
@@ -560,7 +547,7 @@ export default function ProposalDetails() {
         functionName: 'execute',
         args: [
           proposal.targets as `0x${string}`[],
-          proposal.values,
+          values,
           proposal.calldatas as `0x${string}`[],
           descriptionHash,
         ],
@@ -572,7 +559,9 @@ export default function ProposalDetails() {
     }
   };
 
-  if (!proposal) return <div>Loading...</div>;
+  if (!proposal) return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black" />
+  );
 
   const proposalState = Number(proposal.state);
 
@@ -604,11 +593,26 @@ export default function ProposalDetails() {
               className="space-y-6"
             >
               <div className="bg-gradient-to-br from-blue-900/30 via-purple-900/30 to-gray-800/30 backdrop-blur-xl rounded-2xl p-8 border border-blue-700/30">
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center mr-4">
                   <div className="space-y-4 text-center">
                     <div className="flex items-center justify-center space-x-4">
                       <h1 className="text-3xl font-bold">{proposal.title}</h1>
-                      <span className="text-lg px-4 py-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 font-semibold">
+                      <span 
+                        onClick={() => {
+                          navigator.clipboard.writeText(proposal.id);
+                          toast.success('Proposal ID copied to clipboard', {
+                            style: {
+                              background: '#333',
+                              color: '#fff',
+                            },
+                            iconTheme: {
+                              primary: '#48bb78',
+                              secondary: '#fff',
+                            },
+                          });
+                        }}
+                        className="text-lg px-5 py-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 font-semibold cursor-pointer hover:bg-blue-500/20 transition-all duration-300"
+                      >
                         #{proposal.id}
                       </span>
                     </div>
@@ -616,25 +620,25 @@ export default function ProposalDetails() {
                 </div>
 
                 {/* Voting Times */}
-                <div className="grid grid-cols-2 gap-8 mt-8">
-                  <div className="space-y-1.5 text-center">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Voting Starts</p>
+                <div className="grid grid-cols-2 gap-6 pt-9 border-gray-700/50 place-items-center">
+                  <div className="space-y-1 text-center">
+                    <p className="text font-medium text-gray-400 uppercase tracking-wider">Voting Starts</p>
                     <div className="space-y-1">
-                      <p className="text-base font-semibold text-white">
-                        <CountdownTimer targetDate={proposal.voteStart} state={Number(proposal.state)} />
+                      <p className="text-base text-lg font-semibold text-white">
+                        <CountdownTimer targetDate={proposal.voteStart} type="start" />
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm text-gray-500">
                         [{format(proposal.voteStart, 'MMM d, yyyy HH:mm')}]
                       </p>
                     </div>
                   </div>
-                  <div className="space-y-1.5 text-center">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Voting Ends</p>
+                  <div className="space-y-1 text-center">
+                    <p className="text font-medium text-gray-400 uppercase tracking-wider">Voting Ends</p>
                     <div className="space-y-1">
-                      <p className="text-base font-semibold text-white">
-                        <VotingEndDisplay state={Number(proposal.state)} voteEnd={proposal.voteEnd} />
+                      <p className="text-base text-lg font-semibold text-white">
+                        <CountdownTimer targetDate={proposal.voteEnd} type="end" />
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm text-gray-500">
                         [{format(proposal.voteEnd, 'MMM d, yyyy HH:mm')}]
                       </p>
                     </div>
@@ -656,19 +660,18 @@ export default function ProposalDetails() {
               <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-xl font-semibold">Details</h2>
-                  <span className={`inline-flex px-4 py-2 rounded-lg text-sm font-medium ${
-                    getStateColor(Number(proposal.state) as ProposalState)
-                  }`}>
+                  <span className={`inline-flex px-4 py-2 rounded-lg text-sm font-medium ${getStateColor(Number(proposal.state) as ProposalState)
+                    }`}>
                     {getStateLabel(Number(proposal.state))}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <CopyableAddress 
-                    address={proposal.proposer} 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <CopyableAddress
+                    address={proposal.proposer}
                     label="Proposer"
                   />
-                  <CopyableAddress 
-                    address={proposal.manufacturerAddress} 
+                  <CopyableAddress
+                    address={proposal.manufacturerAddress}
                     label="Manufacturer Address"
                   />
                 </div>
@@ -679,7 +682,7 @@ export default function ProposalDetails() {
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-xl font-semibold">Voting Stats</h2>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-400">Total Votes:</span>
+                    <span className="text-md font-medium text-gray-400">Total Votes:</span>
                     <span className="text-lg font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                       {(Number(proposal.forVotes) + Number(proposal.againstVotes) + Number(proposal.abstainVotes)).toLocaleString()}
                     </span>
@@ -719,15 +722,17 @@ export default function ProposalDetails() {
 
               {proposalState === ProposalState.Queued && (
                 <div>
-                  <div className="text-sm text-gray-400 mb-2">
-                    Time until execution: {timeLeft}
-                  </div>
+                  {!canExecute && (
+                    <div className="text-md text-gray-400 mt-5 text-center">
+                      Time until execution: {timeLeft}
+                    </div>
+                  )}
                   <button
                     onClick={() => handleExecute(proposal)}
                     disabled={isPending || isTxLoading || !canExecute}
-                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
+                    className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
                   >
-                    {isPending || isTxLoading ? 'Executing...' : canExecute ? 'Execute Proposal' : 'Waiting for timelock...'}
+                    {isPending || isTxLoading ? 'Executing...' : canExecute ? 'Execute Proposal' : 'Waiting for timelock before execution...'}
                   </button>
                 </div>
               )}

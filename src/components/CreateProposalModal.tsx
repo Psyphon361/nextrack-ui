@@ -89,9 +89,14 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
   useEffect(() => {
     if (isPending && !txPending) {
       setTxPending(true);
-      toast.loading('Confirm the transaction in your wallet...', {
+      toast.loading('Confirm in your wallet...', {
         id: 'proposal-tx',
         duration: Infinity,
+        style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '10px',
+        }
       });
     }
   }, [isPending, txPending]);

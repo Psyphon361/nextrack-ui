@@ -25,27 +25,6 @@ const features = [
   },
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-    },
-  },
-};
-
 export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
@@ -54,7 +33,7 @@ export default function FeaturesPage() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 opacity-50" />
-        <div className="container mx-auto px-6 py-24">
+        <div className="container mx-auto px-6 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -73,62 +52,101 @@ export default function FeaturesPage() {
       </div>
 
       {/* Features Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="container mx-auto px-6 py-24"
-      >
+      <div className="container mx-auto px-6 py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {features.map((feature, index) => (
-            <motion.div
+            <div
               key={feature.title}
-              variants={itemVariants}
               className="relative group"
             >
-              <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-xl -z-10" />
-              <div className="bg-gray-800/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700/50 h-full transform transition-transform group-hover:-translate-y-2">
-                <div className={`inline-block p-3 rounded-lg bg-gradient-to-r ${feature.color} mb-6`}>
-                  <feature.icon />
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10" />
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+                className="bg-gray-800/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700/50 h-full relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 ease-in-out"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-300" />
+                <div className="relative z-10 flex flex-col h-full">
+                  <div className={`inline-block p-3 rounded-lg bg-gradient-to-r ${feature.color} mb-6 self-start group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-blue-300 transition-colors duration-300">{feature.title}</h3>
+                  <p className="text-gray-400 leading-relaxed flex-grow group-hover:text-gray-200 transition-colors duration-300">{feature.description}</p>
+                  <div className="mt-4 self-start">
+                  </div>
                 </div>
-                <h3 className="text-2xl font-bold mb-4">{feature.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{feature.description}</p>
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           ))}
         </div>
-      </motion.div>
+      </div>
 
       {/* Benefits Section */}
-      <div className="container mx-auto px-6 py-24 border-t border-gray-800">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          className="max-w-3xl mx-auto text-center"
-        >
-          <h2 className="text-4xl font-bold mb-12 font-['Space_Grotesk']">Why Choose NexTrack?</h2>
-          <div className="space-y-8">
-            <div className="p-6 bg-gray-800/30 rounded-xl">
-              <h3 className="text-xl font-semibold mb-2">Seamless Integration</h3>
-              <p className="text-gray-400">
-                Easily integrate with your existing systems and start tracking your products within minutes.
-              </p>
-            </div>
-            <div className="p-6 bg-gray-800/30 rounded-xl">
-              <h3 className="text-xl font-semibold mb-2">Real-time Updates</h3>
-              <p className="text-gray-400">
-                Get instant notifications and updates about your product's location and status.
-              </p>
-            </div>
-            <div className="p-6 bg-gray-800/30 rounded-xl">
-              <h3 className="text-xl font-semibold mb-2">Cost-Effective</h3>
-              <p className="text-gray-400">
-                Reduce operational costs and increase efficiency with our blockchain-based solution.
-              </p>
-            </div>
+      <div className="container mx-auto px-6 pt-6">
+        <div className="container mx-auto px-6">
+          <motion.h2 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1 }}
+            className="text-4xl font-bold mb-16 text-center font-['Space_Grotesk']"
+          >
+            Why Choose NexTrack?
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Seamless Integration',
+                description: 'Easily integrate with your existing systems and start tracking your products within minutes.',
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                  </svg>
+                )
+              },
+              {
+                title: 'Real-time Updates',
+                description: 'Get instant notifications and updates about your product\'s location and status.',
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )
+              },
+              {
+                title: 'Cost-Effective',
+                description: 'Reduce operational costs and increase efficiency with our blockchain-based solution.',
+                icon: (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )
+              }
+            ].map((benefit, index) => (
+              <div 
+                key={index} 
+                className="relative group"
+              >
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 -z-10" />
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.2 }}
+                  className="bg-gray-800/50 rounded-xl p-8 backdrop-blur-sm border border-gray-700/50 h-full relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-300 ease-in-out"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-600/20 to-purple-600/20 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-110 transition-transform duration-300" />
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="inline-block mb-6 self-start group-hover:scale-110 transition-transform duration-300">
+                      {benefit.icon}
+                    </div>
+                    <h3 className="text-2xl font-bold mb-4 text-white group-hover:text-blue-300 transition-colors duration-300">{benefit.title}</h3>
+                    <p className="text-gray-400 leading-relaxed flex-grow group-hover:text-gray-200 transition-colors duration-300">{benefit.description}</p>
+                  </div>
+                </motion.div>
+              </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

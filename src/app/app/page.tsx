@@ -27,9 +27,9 @@ const features = [
 ];
 
 const statsData = [
-  { label: 'Products Tracked', value: '10,000+' },
-  { label: 'Verified Manufacturers', value: '50+' },
-  { label: 'Countries', value: '25+' }
+  { label: 'Total Batches', value: '10,000+' },
+  { label: 'Active Batches', value: '50+' },
+  { label: 'Unique Products', value: '25+' }
 ];
 
 export default function AppPage() {
@@ -186,10 +186,29 @@ export default function AppPage() {
               {statsData.map((stat) => (
                 <div
                   key={stat.label}
-                  className="bg-gray-800/40 rounded-2xl p-8 backdrop-blur-md border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl"
+                  className="bg-gray-800/40 rounded-2xl p-8 backdrop-blur-md border border-gray-700/50 hover:border-blue-500/50 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-xl flex items-center justify-between"
                 >
-                  <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">{stat.value}</div>
-                  <div className="text-gray-400 text-lg tracking-wide">{stat.label}</div>
+                  <div>
+                    <div className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">{stat.value}</div>
+                    <div className="text-gray-400 text-lg tracking-wide">{stat.label}</div>
+                  </div>
+                  <div className="opacity-30 ml-4">
+                    {stat.label === 'Total Batches' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                    )}
+                    {stat.label === 'Active Batches' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                    )}
+                    {stat.label === 'Unique Products' && (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z" />
+                      </svg>
+                    )}
+                  </div>
                 </div>
               ))}
             </motion.div>
@@ -221,7 +240,7 @@ export default function AppPage() {
                   <div className="flex items-center gap-5 mb-5">
                     <div className="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 transition-transform group-hover:rotate-6">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" />
+                        <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 000 1.5h2.25a.75.75 0 000-1.5H12.75z" />
                       </svg>
                     </div>
                     <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Register Product</h3>

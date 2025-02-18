@@ -172,8 +172,12 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
   useEffect(() => {
     if (isPending && !txPending) {
       setTxPending(true);
-      toast.loading('Confirm the transaction in your wallet...', {
-        id: 'vote-tx',
+      toast.loading('Confirm in your wallet...', {
+        id: 'vote-tx',style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '10px',
+        }
       });
     }
   }, [isPending, txPending]);
@@ -308,33 +312,28 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     }, 100);
   };
 
-  const handleVote = async (support: VoteType) => {
-    if (!address) return;
-
-    try {
-      setSelectedVote(support);
-
-      writeContract({
-        address: governorAddress,
-        abi: governorABI,
-        functionName: 'castVote',
-        args: [BigInt(proposal.id), support],
-      });
-    } catch (err) {
-      console.error('Error casting vote:', err);
-      toast.error('Failed to cast vote', {
-        id: 'vote-tx',
-        duration: 3000,
-      });
-      setTxPending(false);
-    }
-  };
-
   if (!proposal) {
     return null;
   }
 
   const isVotingEnabled = proposal?.state === 1;
+
+  // Debug state changes
+  useEffect(() => {
+    console.log('Selected vote changed:', selectedVote);
+    console.log('Vote type Against is:', VoteType.Against);
+  }, [selectedVote]);
+
+  useEffect(() => {
+    console.log('Submit button conditions:', {
+      hasDelegatedToSelf,
+      selectedVote,
+      hasComment: !!comment.trim(),
+      isVotingEnabled,
+      txPending,
+      isButtonDisabled: !hasDelegatedToSelf || selectedVote === null || !comment.trim() || !isVotingEnabled || txPending
+    });
+  }, [hasDelegatedToSelf, selectedVote, comment, isVotingEnabled, txPending]);
 
   return (
     <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
@@ -342,8 +341,8 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
         {/* Token Balance */}
         <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-700/30">
           <div>
-            <h3 className="text-sm font-medium text-gray-400">$NXT Balance</h3>
-            <p className="text-2xl font-bold text-white">
+            <h3 className="text-md font-medium text-gray-400">$NXT Balance</h3>
+            <p className="text-2xl font-bold text-white pt-2">
               {nxtBalance ? (Number(nxtBalance) / 1e18).toLocaleString() : '0'} NXT
             </p>
           </div>
@@ -363,7 +362,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
             <button
               onMouseEnter={handleTooltipEnter}
               onMouseLeave={handleTooltipLeave}
-              className="text-sm text-blue-400 hover:text-blue-300"
+              className="text-md text-blue-400 hover:text-blue-300"
             >
               How is my voting power calculated?
             </button>
@@ -392,7 +391,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
           <h3 className="text-lg font-semibold">Cast Your Vote</h3>
           {!isVotingEnabled && (
             <div className="text-yellow-500 mb-4">
-              Voting is not active for this proposal
+              Voting is not active for this proposal.
             </div>
           )}
           <div className="flex flex-col space-y-4 max-w-xl mx-auto">
@@ -437,12 +436,12 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               disabled={!hasDelegatedToSelf || !isVotingEnabled || txPending}
-              className="w-full h-24 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mb-5 h-48 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
 
             <button
               onClick={handleVoteSubmit}
-              disabled={!hasDelegatedToSelf || !selectedVote || !comment.trim() || !isVotingEnabled || txPending}
+              disabled={!hasDelegatedToSelf || selectedVote === null || !comment.trim() || !isVotingEnabled || txPending}
               className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
             >
               {txPending

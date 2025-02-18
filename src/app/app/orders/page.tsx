@@ -80,7 +80,7 @@ export default function OrdersPage() {
 
               const batchIdString = parsedRequest.batchId.toString();
               let batch;
-              
+
               if (!batchIdString) {
                 console.warn('⚠️ No batch ID found for request:', requestId.toString());
                 batch = { name: 'Unknown', description: 'Unknown', unitPrice: BigInt(0) };
@@ -146,7 +146,13 @@ export default function OrdersPage() {
       return;
     }
 
-    const toastId = toast.loading('Confirming receipt...');
+    const toastId = toast.loading('Confirming receipt...', {
+      style: {
+        background: '#333',
+        color: '#fff',
+        borderRadius: '10px',
+      },
+    });
 
     try {
       console.log(`🔄 Confirming receipt for request ${requestId}`);
@@ -154,10 +160,10 @@ export default function OrdersPage() {
 
       // Get the contract interface
       const iface = new ethers.Interface(NexTrackABI);
-      
+
       // Encode the function call
       const data = iface.encodeFunctionData("confirmTransfer", [requestId]);
-      
+
       // First do a static call to check if the transaction will succeed
       try {
         await signerContract.confirmTransfer.staticCall(requestId);
@@ -165,15 +171,21 @@ export default function OrdersPage() {
         console.error('Static call failed:', error);
         throw new Error('Transaction would fail');
       }
-      
+
       // Send the actual transaction
       const tx = await signerContract.confirmTransfer(requestId);
-      
-      toast.loading('Confirming receipt on blockchain...', { id: toastId });
-      
+
+      toast.loading('Confirming receipt on blockchain...', {
+        id: toastId, style: {
+          background: '#333',
+          color: '#fff',
+          borderRadius: '10px',
+        }
+      });
+
       const receipt = await tx.wait();
       console.log(`✅ Confirm transaction confirmed:`, receipt.hash);
-      
+
       toast.success('Receipt confirmed successfully!', { id: toastId });
 
       // Refresh the requests list
@@ -181,7 +193,7 @@ export default function OrdersPage() {
     } catch (error) {
       console.error(`❌ Error confirming receipt ${requestId}:`, error);
       const errorMessage = (error as Error).message || '';
-      
+
       // Check if user rejected transaction
       if (errorMessage.includes('user rejected') || errorMessage.includes('User denied')) {
         toast.error('Transaction rejected', { id: toastId });
@@ -197,13 +209,13 @@ export default function OrdersPage() {
 
   const displayedRequests = requests.filter((request) => {
     const matchesStatus = statusFilter === undefined || request.status === statusFilter;
-    const matchesSearch = searchQuery.trim() === '' || 
+    const matchesSearch = searchQuery.trim() === '' ||
       request.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.productDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.seller.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.buyer.toLowerCase().includes(searchQuery.toLowerCase()) ||
       request.batchId.toString().includes(searchQuery);
-    
+
     return matchesStatus && matchesSearch;
   });
 
@@ -242,56 +254,51 @@ export default function OrdersPage() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
           </div>
         </div>
-        
+
         {/* Status filter */}
         <div className="flex space-x-4 mb-8">
           <button
             onClick={() => setStatusFilter(undefined)}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              statusFilter === undefined
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${statusFilter === undefined
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             All
           </button>
           <button
             onClick={() => setStatusFilter(0)}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              statusFilter === 0
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${statusFilter === 0
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Pending
           </button>
           <button
             onClick={() => setStatusFilter(1)}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              statusFilter === 1
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${statusFilter === 1
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Approved
           </button>
           <button
             onClick={() => setStatusFilter(2)}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              statusFilter === 2
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${statusFilter === 2
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Rejected
           </button>
           <button
             onClick={() => setStatusFilter(3)}
-            className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-              statusFilter === 3
+            className={`px-6 py-2 rounded-xl transition-all duration-300 ${statusFilter === 3
                 ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
                 : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-            }`}
+              }`}
           >
             Completed
           </button>
@@ -321,7 +328,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-gray-400 text-sm mb-1">Batch ID</div>
-                    <button 
+                    <button
                       onClick={() => {
                         navigator.clipboard.writeText(request.batchId.toString());
                         toast.success('Batch ID copied to clipboard');
@@ -358,19 +365,7 @@ export default function OrdersPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-gray-400 text-sm mb-1">From</p>
-                      <button 
-                        onClick={() => {
-                          navigator.clipboard.writeText(request.seller);
-                          toast.success('Address copied to clipboard');
-                        }}
-                        className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
-                      >
-                        {request.seller}
-                      </button>
-                    </div>
-                    <div>
-                      <p className="text-gray-400 text-sm mb-1">To</p>
-                      <button 
+                      <button
                         onClick={() => {
                           navigator.clipboard.writeText(request.buyer);
                           toast.success('Address copied to clipboard');
@@ -378,6 +373,18 @@ export default function OrdersPage() {
                         className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
                       >
                         {request.buyer}
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-gray-400 text-sm mb-1">To</p>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(request.seller);
+                          toast.success('Address copied to clipboard');
+                        }}
+                        className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded w-full text-left hover:bg-blue-600/50 transition-colors truncate"
+                      >
+                        {request.seller}
                       </button>
                     </div>
                   </div>
@@ -388,11 +395,10 @@ export default function OrdersPage() {
                     <button
                       onClick={() => handleConfirmReceipt(request.requestId)}
                       disabled={!!processingTx}
-                      className={`w-full ${
-                        processingTx
+                      className={`w-full ${processingTx
                           ? 'bg-gray-600 cursor-not-allowed'
                           : 'bg-green-600 hover:bg-green-700'
-                      } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                        } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
                     >
                       {processingTx === `confirm-${request.requestId.toString()}` ? (
                         <span className="flex items-center justify-center">

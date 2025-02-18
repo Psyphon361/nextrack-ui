@@ -9,8 +9,10 @@ import toast, { Toaster } from 'react-hot-toast';
 import Navigation from '@/components/Navigation';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/contracts';
 import { ProductCategory } from '@/types/contracts';
+import { useRouter } from 'next/navigation';
 
 export default function RegisterBatchPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -89,6 +91,11 @@ export default function RegisterBatchPage() {
             borderRadius: '10px',
           },
         });
+
+        // Redirect to My Listings page after a short delay
+        setTimeout(() => {
+          router.push('/app/my-batches');
+        }, 2000);
       } else {
         throw new Error('Failed to get batch ID from event');
       }

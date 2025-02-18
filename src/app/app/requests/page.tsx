@@ -274,7 +274,7 @@ export default function RequestsPage() {
         gasLimit: 300000
       });
 
-      toast.loading('Transaction submitted. Waiting for confirmation...', {
+      toast.loading('Waiting for transaction confirmation', {
         id: toastId,
         style: {
           background: '#333',
@@ -393,7 +393,7 @@ export default function RequestsPage() {
         gasLimit: 300000
       });
 
-      toast.loading('Transaction submitted. Waiting for confirmation...', {
+      toast.loading('Waiting for transaction confirmation', {
         id: toastId,
         style: {
           background: '#333',
@@ -597,7 +597,7 @@ export default function RequestsPage() {
                         }}
                         className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
                       >
-                        {request.seller}
+                        {request.buyer}
                       </button>
                       <div className="text-gray-400 mt-2">To</div>
                       <button 
@@ -607,7 +607,7 @@ export default function RequestsPage() {
                         }}
                         className="text-white font-mono text-sm hover:text-blue-400 transition-colors"
                       >
-                        {request.buyer}
+                        {request.seller}
                       </button>
                     </div>
                     <div>

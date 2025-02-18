@@ -133,7 +133,7 @@ export default function Navigation() {
                       }`}
                     >
                       <span className="group-hover:tracking-wider transition-all duration-300">
-                        Register Batch
+                        Register Product
                       </span>
                     </Link>
                   ) : (
