@@ -75,30 +75,61 @@ export default function Navigation() {
               // App Navigation Links
               <>
                 <div className="flex items-center space-x-6">
-                  <Link
-                    href="/app/my-batches"
-                    className={`text-xl font-medium transition-all duration-300 group ${
-                      pathname === '/app/my-batches' 
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
-                        : 'text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    <span className="group-hover:tracking-wider transition-all duration-300">
-                      My Listings
-                    </span>
-                  </Link>
-                  <Link
-                    href="/app/requests"
-                    className={`text-xl font-medium transition-all duration-300 group ${
-                      pathname === '/app/requests' 
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
-                        : 'text-gray-300 hover:text-white'
-                    }`}
-                  >
-                    <span className="group-hover:tracking-wider transition-all duration-300">
-                      Purchase Requests
-                    </span>
-                  </Link>
+                  {isConnected ? (
+                    <>
+                      <Link
+                        href="/app/my-batches"
+                        className={`text-xl font-medium transition-all duration-300 group ${
+                          pathname === '/app/my-batches' 
+                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                            : 'text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        <span className="group-hover:tracking-wider transition-all duration-300">
+                          My Listings
+                        </span>
+                      </Link>
+                      <Link
+                        href="/app/requests"
+                        className={`text-xl font-medium transition-all duration-300 group ${
+                          pathname === '/app/requests' 
+                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                            : 'text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        <span className="group-hover:tracking-wider transition-all duration-300">
+                          Purchase Requests
+                        </span>
+                      </Link>
+                      {isManufacturer ? (
+                        <Link
+                          href="/app/register-batch"
+                          className={`text-xl font-medium transition-all duration-300 group ${
+                            pathname === '/app/register-batch' 
+                              ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                              : 'text-gray-300 hover:text-white'
+                          }`}
+                        >
+                          <span className="group-hover:tracking-wider transition-all duration-300">
+                            Register Product
+                          </span>
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/app/orders"
+                          className={`text-xl font-medium transition-all duration-300 group ${
+                            pathname === '/app/orders' 
+                              ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
+                              : 'text-gray-300 hover:text-white'
+                          }`}
+                        >
+                          <span className="group-hover:tracking-wider transition-all duration-300">
+                            My Orders
+                          </span>
+                        </Link>
+                      )}
+                    </>
+                  ) : null}
                   <Link
                     href="/app/marketplace"
                     className={`text-xl font-medium transition-all duration-300 group ${
@@ -123,33 +154,6 @@ export default function Navigation() {
                       Governance
                     </span>
                   </Link>
-                  {isManufacturer ? (
-                    <Link
-                      href="/app/register-batch"
-                      className={`text-xl font-medium transition-all duration-300 group ${
-                        pathname === '/app/register-batch' 
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
-                          : 'text-gray-300 hover:text-white'
-                      }`}
-                    >
-                      <span className="group-hover:tracking-wider transition-all duration-300">
-                        Register Product
-                      </span>
-                    </Link>
-                  ) : (
-                    <Link
-                      href="/app/orders"
-                      className={`text-xl font-medium transition-all duration-300 group ${
-                        pathname === '/app/orders' 
-                          ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
-                          : 'text-gray-300 hover:text-white'
-                      }`}
-                    >
-                      <span className="group-hover:tracking-wider transition-all duration-300">
-                        My Orders
-                      </span>
-                    </Link>
-                  )}
                 </div>
 
                 {address ? (

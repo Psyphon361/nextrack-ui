@@ -20,22 +20,25 @@
 /* Responsive scaling */
 @media screen and (min-width: 2560px) {
   :root {
-    --scale-factor: 1;
-    font-size: 15px;
+    --scale-factor: 1.05;
+    font-size: 16px;
   }
 }
 
 @media screen and (min-width: 1920px) and (max-width: 2559px) {
   :root {
-    --scale-factor: 1;
-    font-size: 16px;
+    --scale-factor: 0.9;
+    font-size: 14px;
   }
 }
 
+/* 1080p specific scaling */
 @media screen and (max-width: 1919px) {
-  :root {
-    --scale-factor: 1;
-    font-size: 14px;
+  .container {
+    max-width: 1366px !important;
+    transform: scale(0.75);
+    transform-origin: top center;
+    margin: 0 auto !important;
   }
 }
 
