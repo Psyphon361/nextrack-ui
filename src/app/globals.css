@@ -46,27 +46,35 @@
     height: 4rem !important;
     display: flex !important;
     align-items: center !important;
-    transform: scale(1) !important;
   }
 
   nav .container {
     height: 100% !important;
-    transform: scale(1) !important;
-    margin-top: -0.5rem !important;
+    transform: scale(0.75) !important;
+    transform-origin: top center !important;
+    margin: 0 auto !important;
+    margin-top: 1rem !important;
+    max-width: 1366px !important;
   }
 
   nav .container > div {
     height: 100% !important;
     display: flex !important;
     align-items: center !important;
+    transform-origin: top center !important;
   }
 
   nav .text-xl {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
+  }
+
+  /* Logo text size */
+  nav .group span.text-xl {
+    font-size: 1.5rem !important;
   }
 
   nav [class*="rounded-2xl"] {
-    font-size: 0.75rem !important;
+    font-size: 1rem !important;
     padding: 0.5rem 1rem !important;
   }
 
