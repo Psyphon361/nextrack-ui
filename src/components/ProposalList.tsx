@@ -81,7 +81,7 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {sortedProposals.map((proposal, index) => {
             const { label, className } = getProposalStateLabel(proposal.state);
-            
+
             return (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -92,7 +92,7 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
               >
                 {/* Proposal ID Badge */}
                 <div className="absolute -top-3 left-6">
-                  <button 
+                  <button
                     onClick={() => navigator.clipboard.writeText(proposal.id).then(() => toast.success('Proposal ID copied to clipboard!', {
                       duration: 2000,
                       style: {
@@ -101,13 +101,13 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
                         borderRadius: '10px',
                       },
                     }))}
-                    className="px-3 py-1 bg-gray-900/90 rounded-full text-xs font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
+                    className="px-3 py-1 bg-gray-900/90 rounded-full text-sm font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
                   >
                     <span>Proposal #{proposal.id}</span>
-                    <svg 
-                      className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" 
-                      fill="none" 
-                      stroke="currentColor" 
+                    <svg
+                      className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      fill="none"
+                      stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
@@ -117,15 +117,15 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
 
                 <div className="flex justify-between items-start mt-3 mb-6">
                   <div className="space-y-2 flex-1">
-                    <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider">Proposal Description</h3>
+                    <h3 className="text font-medium text-gray-400 uppercase tracking-wider">Proposal Description</h3>
                     <p className="text-base text-white leading-relaxed pr-4">
-                      {proposal.description.length > 150 
-                        ? `${proposal.description.slice(0, 150)}...` 
+                      {proposal.description.length > 150
+                        ? `${proposal.description.slice(0, 150)}...`
                         : proposal.description}
                     </p>
-                    <Link 
+                    <Link
                       href={`/dao/proposal/${proposal.id}`}
-                      className="text-blue-400 hover:text-blue-300 text-sm font-medium inline-block mt-2"
+                      className="text-blue-400 hover:text-blue-300 text font-medium inline-block mt-2"
                     >
                       View Details →
                     </Link>
@@ -137,19 +137,19 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="space-y-1.5">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Proposed Manufacturer</p>
+                    <p className="text-md font-medium text-gray-400 uppercase tracking-wider">Proposed Manufacturer</p>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <p className="text-base font-semibold text-white font-mono">
+                      <p className="text-lg text-base font-semibold text-white font-mono">
                         {formatAddress(proposal.manufacturerAddress)}
                       </p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Proposer</p>
+                    <p className="text font-medium text-gray-400 uppercase tracking-wider">Proposer</p>
                     <div className="flex items-center space-x-2">
                       <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                      <p className="text-base font-semibold text-white font-mono">
+                      <p className="text-lg text-base font-semibold text-white font-mono">
                         {formatAddress(proposal.proposer)}
                       </p>
                     </div>
@@ -158,23 +158,23 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
 
                 <div className="grid grid-cols-2 gap-4 pt-6 border-t border-gray-700/50">
                   <div className="space-y-1.5">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Voting Starts</p>
+                    <p className="text font-medium text-gray-400 uppercase tracking-wider">Voting Starts</p>
                     <div className="space-y-1">
-                      <div className="text-base font-semibold text-white">
+                      <div className="text-lg text-base font-semibold text-white">
                         <CountdownTimer targetDate={proposal.voteStart} type="start" />
                       </div>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm text-gray-500">
                         [{format(proposal.voteStart, 'MMM d, yyyy HH:mm')}]
                       </p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">Voting Ends</p>
+                    <p className="text font-medium text-gray-400 uppercase tracking-wider">Voting Ends</p>
                     <div className="space-y-1">
-                      <p className="text-base font-semibold text-white">
-                        <CountdownTimer targetDate={proposal.voteEnd} type="end" />
-                      </p>
-                      <p className="text-xs text-gray-500">
+                      <div className="text-lg text-base font-semibold text-white">
+                        <CountdownTimer targetDate={proposal.voteStart} type="end" />
+                      </div>
+                      <p className="text-sm text-gray-500">
                         [{format(proposal.voteEnd, 'MMM d, yyyy HH:mm')}]
                       </p>
                     </div>
