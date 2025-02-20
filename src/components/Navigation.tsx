@@ -52,18 +52,18 @@ export default function Navigation() {
   return (
     <nav className="border-b border-gray-700/50 bg-gray-900/60 backdrop-blur-xl sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <div className="flex items-center space-x-4">
             <Link href={isAppRoute ? "/app" : "/"} className="flex items-center space-x-4 group">
               <Image
                 src="/logo.svg"
                 alt="NexTrack Logo"
-                width={40}
-                height={40}
+                width={32}
+                height={32}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-2xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
+              <span className="text-xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
                 NexTrack
               </span>
             </Link>
