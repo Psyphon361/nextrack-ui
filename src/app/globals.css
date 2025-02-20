@@ -37,9 +37,8 @@
   .container {
     max-width: 1366px !important;
     transform: scale(0.75);
-    transform-origin: center !important;
+    transform-origin: top center !important;
     margin: 0 auto !important;
-    position: relative !important;
   }
 
   /* Navbar specific styles for 1080p */
@@ -47,12 +46,13 @@
     height: 4rem !important;
     display: flex !important;
     align-items: center !important;
-    transform-origin: top center !important;
+    transform: scale(1) !important;
   }
 
   nav .container {
     height: 100% !important;
-    transform-origin: center !important;
+    transform: scale(1) !important;
+    margin-top: -0.5rem !important;
   }
 
   nav .container > div {
@@ -62,11 +62,11 @@
   }
 
   nav .text-xl {
-    font-size: 1.25rem !important;
+    font-size: 1rem !important;
   }
 
   nav [class*="rounded-2xl"] {
-    font-size: 0.875rem !important;
+    font-size: 0.75rem !important;
     padding: 0.5rem 1rem !important;
   }
 
