@@ -258,7 +258,7 @@ export default function RegisterBatchPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
+              <label className="block text font-medium mb-2 text-gray-300">
                 Product Image <span className="text-red-500">*</span>
               </label>
               <div className="flex items-center space-x-4 pr-4">
@@ -313,7 +313,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
+              <label className="block text font-medium mb-2 text-gray-300">
                 Product Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -327,7 +327,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
+              <label className="block text font-medium mb-2 text-gray-300">
                 Description <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -340,7 +340,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
+              <label className="block text font-medium mb-2 text-gray-300">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
@@ -360,7 +360,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
+              <label className="block text font-medium mb-2 text-gray-300">
                 Total Quantity <span className="text-red-500">*</span>
               </label>
               <input
@@ -375,7 +375,7 @@ export default function RegisterBatchPage() {
             </div>
 
             <div>
-              <label htmlFor="unitPrice" className="block text-sm font-medium mb-2 text-gray-300">
+              <label htmlFor="unitPrice" className="block text font-medium mb-2 text-gray-300">
                 Unit Price (USD) <span className="text-red-500">*</span>
               </label>
               <input

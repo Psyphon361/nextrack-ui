@@ -83,7 +83,7 @@ export default function FeaturesPage() {
       </div>
 
       {/* Benefits Section */}
-      <div className="container mx-auto px-6 pt-6">
+      <div className="container mx-auto px-6 pb-16">
         <div className="container mx-auto px-6">
           <motion.h2 
             initial={{ opacity: 0 }}

@@ -753,10 +753,10 @@ export default function MyBatchesPage() {
                         <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
                           {batch.name}
                         </h3>
-                        <p className="text-gray-300 text-sm mb-4 line-clamp-2">{batch.description}</p>
+                        <p className="text-gray-300 text- mb-4 line-clamp-2">{batch.description}</p>
                       </div>
                       <div className="text-right mt-6">
-                        <div className="text-gray-400 text-sm mb-1">Batch ID</div>
+                        <div className="text-gray-400 text mb-1">Batch ID</div>
                         <button 
                           onClick={() => {
                             navigator.clipboard.writeText(batch.batchId.toString());
@@ -771,17 +771,17 @@ export default function MyBatchesPage() {
 
                     <div className="grid grid-cols-2 gap-4 border-t border-gray-700/30 pt-4">
                       <div>
-                        <p className="text-gray-400 text-sm mb-1">Category</p>
+                        <p className="text-gray-400 text mb-1">Category</p>
                         <p className="text-white font-semibold text-lg">{batch.category}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-gray-400 text-sm mb-1">Quantity</p>
+                        <p className="text-gray-400 text mb-1">Quantity</p>
                         <p className="text-white font-semibold text-lg">{batch.totalQuantity.toString()}</p>
                       </div>
                       <div className="col-span-2 border-t border-gray-700/30 pt-4">
                         <div className="flex justify-between items-center">
                           <div>
-                            <p className="text-gray-400 text-sm mb-1">Price per unit</p>
+                            <p className="text-gray-400 text mb-1">Price per unit</p>
                             <div className="flex items-center space-x-2">
                               <p className="text-white font-semibold text-lg">{formatPrice(batch.unitPrice)}</p>
                               <button
@@ -799,7 +799,7 @@ export default function MyBatchesPage() {
                             </div>
                           </div>
                           <div>
-                            <p className="text-gray-400 text-sm mb-1">Status</p>
+                            <p className="text-gray-400 text mb-1">Status</p>
                             <div className="flex items-center space-x-2">
                               <span className={`font-semibold text-md ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
                                 {batch.isListed ? 'Listed' : 'Not Listed'}

@@ -5,6 +5,78 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --scale-factor: 0.9;
+  font-size: 14px;
+}
+
+/* Scale entire app */
+.container {
+  max-width: calc(1536px * var(--scale-factor)) !important;
+  width: 90% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* Responsive scaling */
+@media screen and (max-width: 1920px) {
+  :root {
+    --scale-factor: 0.9;
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  :root {
+    --scale-factor: 0.9;
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  :root {
+    font-size: 14px;
+  }
+}
+
+/* Fixed text sizes */
+.text-xs {
+  font-size: calc(0.75rem * var(--scale-factor));
+}
+
+.text-sm {
+  font-size: calc(0.875rem * var(--scale-factor));
+}
+
+.text-base {
+  font-size: calc(1rem * var(--scale-factor));
+}
+
+.text-lg {
+  font-size: calc(1.125rem * var(--scale-factor));
+}
+
+.text-xl {
+  font-size: calc(1.25rem * var(--scale-factor));
+}
+
+.text-2xl {
+  font-size: calc(1.5rem * var(--scale-factor));
+}
+
+.text-3xl {
+  font-size: calc(1.875rem * var(--scale-factor));
+}
+
+.text-4xl {
+  font-size: calc(2.25rem * var(--scale-factor));
+}
+
+.text-5xl {
+  font-size: calc(3rem * var(--scale-factor));
+}
+
+.text-6xl {
+  font-size: calc(3.75rem * var(--scale-factor));
 }
 
 @media (prefers-color-scheme: dark) {

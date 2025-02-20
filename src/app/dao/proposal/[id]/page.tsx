@@ -15,6 +15,7 @@ import { useProposals } from '@/hooks/useProposals';
 import { ProposalState } from '@/types/dao';
 import Navigation from '@/components/Navigation';
 import VotingPanel from '@/components/VotingPanel';
+import { CheckIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 
 const governorABI = [{
   name: "queue",
@@ -161,30 +162,26 @@ function CopyableAddress({ address, label }: { address: string; label: string })
   };
 
   return (
-    <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 space-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-base font-medium text-gray-400 uppercase tracking-wider">{label}</p>
+    <div className="space-y-2">
+      <p className="text-base font-medium text-gray-400 uppercase tracking-wider">{label}</p>
+      <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 flex items-center justify-between">
+        <div 
+          onClick={handleCopy}
+          className="font-mono text-base text-white cursor-pointer hover:text-blue-400 transition-colors duration-300 break-all"
+        >
+          {address}
+        </div>
         <button 
           onClick={handleCopy}
-          className="text-gray-400 hover:text-white transition-colors duration-300"
+          className="text-gray-400 hover:text-white transition-colors duration-300 ml-3 flex-shrink-0"
           aria-label="Copy address"
         >
           {copied ? (
-            <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+            <CheckIcon className="w-5 h-5 text-green-500" />
           ) : (
-            <svg className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
+            <DocumentDuplicateIcon className="w-5 h-5" />
           )}
         </button>
-      </div>
-      <div 
-        onClick={handleCopy}
-        className="text-lg font-semibold text-white cursor-pointer hover:text-blue-400 transition-colors duration-300 break-all"
-      >
-        {address}
       </div>
     </div>
   );
@@ -312,18 +309,17 @@ function ExecuteTimer({ eta }: { eta: number }) {
         setTimeLeft('Ready to execute');
         setCanExecute(true);
         clearInterval(timer);
-        return;
+      } else {
+        const days = Math.floor(difference / (24 * 60 * 60));
+        const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
+        const minutes = Math.floor((difference % (60 * 60)) / 60);
+        const seconds = difference % 60;
+
+        setTimeLeft(
+          `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m ${seconds}s`
+        );
+        setCanExecute(false);
       }
-
-      const days = Math.floor(difference / (24 * 60 * 60));
-      const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
-      const minutes = Math.floor((difference % (60 * 60)) / 60);
-      const seconds = difference % 60;
-
-      setTimeLeft(
-        `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m ${seconds}s`
-      );
-      setCanExecute(false);
     }, 1000);
 
     return () => clearInterval(timer);
@@ -379,16 +375,15 @@ function VotingEndDisplay({ state, voteEnd }: { state: number; voteEnd: number |
       if (difference <= 0) {
         setStatus('Ended');
         clearInterval(timer);
-        return;
+      } else {
+        const days = Math.floor(difference / (24 * 60 * 60));
+        const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
+        const minutes = Math.floor((difference % (60 * 60)) / 60);
+
+        setStatus(
+          `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`
+        );
       }
-
-      const days = Math.floor(difference / (24 * 60 * 60));
-      const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
-      const minutes = Math.floor((difference % (60 * 60)) / 60);
-
-      setStatus(
-        `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`
-      );
     }, 1000);
 
     return () => clearInterval(timer);
@@ -396,6 +391,39 @@ function VotingEndDisplay({ state, voteEnd }: { state: number; voteEnd: number |
 
   return <span className="font-mono">{status}</span>;
 }
+
+const proposalSteps = [
+  { state: 0, label: 'Created', color: 'blue' },
+  { state: 1, label: 'Active', color: 'green' },
+  { state: 4, label: 'Succeeded', color: 'blue' },
+  { state: 5, label: 'Queued', color: 'purple' },
+  { state: 7, label: 'Executed', color: 'green' }
+];
+
+const getProgressBarWidth = (currentState: number) => {
+  // For defeated or expired proposals, show progress up to that state
+  if (currentState === 3 || currentState === 2) {
+    return '100%'; // Fully reach the defeated/expired state
+  }
+  
+  // For active proposals
+  if (currentState === 1) {
+    return '33%'; // Shows progress towards the next state
+  }
+  
+  // For other states, calculate normally
+  const currentStepIndex = proposalSteps.findIndex(step => step.state === currentState);
+  if (currentStepIndex === -1) return '0%';
+  
+  return `${(currentStepIndex + 1) * 25}%`;
+};
+
+const getProgressBarColor = (currentState: number) => {
+  if (currentState === 3) return 'from-blue-500 via-green-500 to-red-500'; // Defeated
+  if (currentState === 2) return 'from-blue-500 via-green-500 to-yellow-500'; // Expired
+  if (currentState === 1) return 'from-blue-500 to-green-500'; // Active
+  return 'from-blue-500 to-purple-500'; // Default success path
+};
 
 export default function ProposalDetails() {
   const params = useParams();
@@ -581,6 +609,70 @@ export default function ProposalDetails() {
 
       <Navigation />
 
+      {/* Progress Bar Section */}
+      <div className="container mx-auto px-6 py-8">
+        <div className="relative">
+          <div className="h-2 bg-gray-700/50 rounded-full">
+            <div 
+              className={`h-full rounded-full bg-gradient-to-r ${getProgressBarColor(Number(proposal.state))} transition-all duration-500`}
+              style={{ width: getProgressBarWidth(Number(proposal.state)) }}
+            />
+          </div>
+          <div className="flex justify-between mt-6">
+            {proposalSteps.map((step, index) => {
+              const currentState = Number(proposal.state);
+              const isActive = currentState >= step.state;
+              const isCurrentStep = currentState === step.state;
+              const isDefeated = currentState === 3;
+              const isExpired = currentState === 2;
+              const isInProgress = currentState === 1; // Active state
+              
+              // For defeated/expired proposals, only show up to that state
+              if ((isDefeated || isExpired) && step.state > 1) {
+                if (index === 2) {
+                  return (
+                    <div key="end-state" className="flex flex-col items-center">
+                      <div className={`w-6 h-6 rounded-full ${isDefeated ? 'bg-red-500' : 'bg-yellow-500'} mb-2 
+                        ring-4 ring-offset-2 ring-offset-gray-900 ring-opacity-60`} />
+                      <span className={`text-lg font-medium ${isDefeated ? 'text-red-500' : 'text-yellow-500'}`}>
+                        {isDefeated ? 'Defeated' : 'Expired'}
+                      </span>
+                    </div>
+                  );
+                }
+                return null;
+              }
+
+              // For active proposals, show all states but dim the upcoming ones
+              const isUpcoming = isInProgress && step.state > 1;
+              
+              return (
+                <div key={step.state} className="flex flex-col items-center">
+                  <div className={`w-6 h-6 rounded-full ${
+                    isActive 
+                      ? `bg-${step.color}-500` 
+                      : isUpcoming 
+                        ? 'bg-gray-700'
+                        : 'bg-gray-600'
+                  } mb-2 ${
+                    isCurrentStep ? 'ring-4 ring-offset-2 ring-offset-gray-900 ring-opacity-60' : ''
+                  }`} />
+                  <span className={`text-lg font-medium ${
+                    isActive 
+                      ? `text-${step.color}-500` 
+                      : isUpcoming 
+                        ? 'text-gray-400'
+                        : 'text-gray-500'
+                  }`}>
+                    {step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Content */}
       <div className="container mt-5 pt-5 mx-auto px-6 pb-12">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -646,34 +738,39 @@ export default function ProposalDetails() {
                 </div>
               </div>
 
-              {/* Description Card */}
-              <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50">
-                <h2 className="text-xl font-semibold mb-6">Description</h2>
-                <div className="prose prose-invert max-w-none">
-                  <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                    {proposal.description}
-                  </p>
+              {/* Description and Details Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Description Card */}
+                <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50">
+                  <h2 className="text-xl font-semibold mb-6">Description</h2>
+                  <div className="prose prose-invert max-w-none">
+                    <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                      {proposal.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Details Card */}
-              <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-8 border border-gray-700/50">
-                <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-xl font-semibold">Details</h2>
-                  <span className={`inline-flex px-4 py-2 rounded-lg text-sm font-medium ${getStateColor(Number(proposal.state) as ProposalState)
-                    }`}>
-                    {getStateLabel(Number(proposal.state))}
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <CopyableAddress
-                    address={proposal.proposer}
-                    label="Proposer"
-                  />
-                  <CopyableAddress
-                    address={proposal.manufacturerAddress}
-                    label="Manufacturer Address"
-                  />
+                {/* Details Card */}
+                <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold">Details</h2>
+                    <span className={`inline-flex px-3 py-1.5 rounded-lg text-sm font-medium ${getStateColor(Number(proposal.state) as ProposalState)
+                      }`}>
+                      {getStateLabel(Number(proposal.state))}
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    <CopyableAddress
+                      address={proposal.proposer}
+                      label="Proposer"
+                      className="text-sm font-mono"
+                    />
+                    <CopyableAddress
+                      address={proposal.manufacturerAddress}
+                      label="Manufacturer Address"
+                      className="text-sm font-mono"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -683,7 +780,7 @@ export default function ProposalDetails() {
                   <h2 className="text-xl font-semibold">Voting Stats</h2>
                   <div className="flex items-center space-x-2">
                     <span className="text-md font-medium text-gray-400">Total Votes:</span>
-                    <span className="text-lg font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
                       {(Number(proposal.forVotes) + Number(proposal.againstVotes) + Number(proposal.abstainVotes)).toLocaleString()}
                     </span>
                   </div>
@@ -730,7 +827,7 @@ export default function ProposalDetails() {
                   <button
                     onClick={() => handleExecute(proposal)}
                     disabled={isPending || isTxLoading || !canExecute}
-                    className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
+                    className="w-full mt-4 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-600 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
                   >
                     {isPending || isTxLoading ? 'Executing...' : canExecute ? 'Execute Proposal' : 'Waiting for timelock before execution...'}
                   </button>

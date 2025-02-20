@@ -540,10 +540,10 @@ export default function MarketplacePage() {
               <h3 className="text-xl font-bold text-white mb-2">
                 {listing.name}
               </h3>
-              <p className="text-gray-300 text-sm line-clamp-2">{listing.description}</p>
+              <p className="text-gray-300 text line-clamp-2">{listing.description}</p>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-gray-400 text-sm">Batch ID</div>
+              <div className="text-gray-400 text">Batch ID</div>
               <button 
                 onClick={() => {
                   navigator.clipboard.writeText(listing.batchId.toString());
@@ -558,7 +558,7 @@ export default function MarketplacePage() {
 
           <div className="grid grid-cols-2 gap-4 mt-4">
             <div>
-              <div className="text-gray-400 text-sm">Seller</div>
+              <div className="text-gray-400 text">Seller</div>
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(listing.owner);
@@ -570,19 +570,19 @@ export default function MarketplacePage() {
               </button>
             </div>
             <div className="text-right">
-              <div className="text-gray-400 text-sm">Price per unit</div>
+              <div className="text-gray-400 text">Price per unit</div>
               <p className="text-white font-semibold text-base">
                 ${(Number(listing.unitPrice) / 1e18).toFixed(2)}
               </p>
             </div>
             <div>
-              <div className="text-gray-400 text-sm">Category</div>
+              <div className="text-gray-400 text">Category</div>
               <p className="text-white font-semibold text-base">
                 {listing.category}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-gray-400 text-sm">Available Quantity</p>
+              <p className="text-gray-400 text">Available Quantity</p>
               <p className="text-white font-semibold text-base">
                 {listing.totalQuantity.toString()}
               </p>
@@ -599,12 +599,12 @@ export default function MarketplacePage() {
                 value={requestQuantities[listing.batchId.toString()] || ''}
                 onChange={(e) => handleQuantityChange(listing, e)}
                 placeholder="Enter quantity"
-                className="w-56 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-56 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={() => handleRequestProducts(listing)}
                 disabled={!requestQuantities[listing.batchId.toString()] || isRequesting}
-                className={`w-56 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center justify-center px-3 py-2 ${
+                className={`w-56 rounded-lg text font-semibold transition-all duration-300 flex items-center justify-center px-3 py-2 ${
                   !requestQuantities[listing.batchId.toString()] || isRequesting
                     ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
@@ -623,7 +623,7 @@ export default function MarketplacePage() {
             </div>
 
             {requestQuantities[listing.batchId.toString()] && (
-              <div className="text-right text-gray-400 text-xs">
+              <div className="text-right text-gray-400 text-sm">
                 Total: ${(Number(listing.unitPrice) * Number(requestQuantities[listing.batchId.toString()]) / 1e18).toFixed(2)}
               </div>
             )}

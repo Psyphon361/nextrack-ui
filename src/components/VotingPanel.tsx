@@ -80,6 +80,16 @@ const governorABI = [{
     { name: 'support', type: 'uint8' }
   ],
   outputs: []
+}, {
+  name: 'castVoteWithReason',
+  type: 'function',
+  stateMutability: 'nonpayable',
+  inputs: [
+    { name: 'proposalId', type: 'uint256' },
+    { name: 'support', type: 'uint8' },
+    { name: 'reason', type: 'string' }
+  ],
+  outputs: []
 }] as const;
 
 export default function VotingPanel({ proposal }: VotingPanelProps) {
@@ -248,8 +258,8 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
       writeContract({
         address: governorAddress,
         abi: governorABI,
-        functionName: 'castVote',
-        args: [BigInt(proposal.id), selectedVote],
+        functionName: 'castVoteWithReason',
+        args: [BigInt(proposal.id), selectedVote, comment.trim()],
       });
     } catch (err) {
       console.error('Error casting vote:', err);
@@ -404,7 +414,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <div className="text-xl font-medium text-green-500">For</div>
-              <div className="text-sm text-gray-400 mt-1">Vote in favor of the proposal</div>
+              <div className="text text-gray-400 mt-1">Vote in favor of the proposal</div>
             </button>
 
             <button
@@ -416,7 +426,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <div className="text-xl font-medium text-red-500">Against</div>
-              <div className="text-sm text-gray-400 mt-1">Vote against the proposal</div>
+              <div className="text text-gray-400 mt-1">Vote against the proposal</div>
             </button>
 
             <button
@@ -428,7 +438,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <div className="text-xl font-medium text-gray-400">Abstain</div>
-              <div className="text-sm text-gray-400 mt-1">Formally abstain from voting</div>
+              <div className="text text-gray-400 mt-1">Formally abstain from voting</div>
             </button>
 
             <textarea

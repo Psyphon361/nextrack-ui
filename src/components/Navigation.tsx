@@ -63,7 +63,7 @@ export default function Navigation() {
                 height={40}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-3xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
+              <span className="text-2xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
                 NexTrack
               </span>
             </Link>
@@ -77,7 +77,7 @@ export default function Navigation() {
                 <div className="flex items-center space-x-6">
                   <Link
                     href="/app/my-batches"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname === '/app/my-batches' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -89,7 +89,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/app/requests"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname === '/app/requests' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -101,7 +101,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/app/marketplace"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname === '/app/marketplace' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -113,7 +113,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/dao"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname.startsWith('/dao')
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -126,7 +126,7 @@ export default function Navigation() {
                   {isManufacturer ? (
                     <Link
                       href="/app/register-batch"
-                      className={`text-lg font-medium transition-all duration-300 group ${
+                      className={`text-xl font-medium transition-all duration-300 group ${
                         pathname === '/app/register-batch' 
                           ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                           : 'text-gray-300 hover:text-white'
@@ -139,7 +139,7 @@ export default function Navigation() {
                   ) : (
                     <Link
                       href="/app/orders"
-                      className={`text-lg font-medium transition-all duration-300 group ${
+                      className={`text-xl font-medium transition-all duration-300 group ${
                         pathname === '/app/orders' 
                           ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                           : 'text-gray-300 hover:text-white'
@@ -155,7 +155,7 @@ export default function Navigation() {
                 {address ? (
                   <div className="relative">
                     <div 
-                      className="relative flex items-center gap-3 px-5 py-3 rounded-2xl text-sm font-medium bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer"
+                      className="relative flex items-center gap-3 px-5 py-3 rounded-2xl text- font-medium bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl group cursor-pointer"
                       // Add onClick to make the entire div interactive if needed
                       onClick={() => {/* Optional: Add any click interaction */}}
                     >
@@ -170,7 +170,7 @@ export default function Navigation() {
                   <button
                     onClick={handleConnect}
                     disabled={isConnecting}
-                    className="relative group overflow-hidden px-8 py-3.5 rounded-2xl text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+                    className="relative group overflow-hidden px-8 py-3.5 rounded-2xl text font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
                   >
                     {/* Gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
@@ -195,7 +195,7 @@ export default function Navigation() {
                 <div className="flex items-center space-x-6">
                 <Link
                     href="/dao"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname.startsWith('/dao')
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -207,7 +207,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/features"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname === '/features' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -219,7 +219,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/about"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-xl font-medium transition-all duration-300 group ${
                       pathname === '/about' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
