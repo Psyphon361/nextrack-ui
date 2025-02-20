@@ -34,25 +34,45 @@
 
 /* 1080p specific scaling */
 @media screen and (max-width: 1919px) {
-  :root {
-    --scale-factor: 0.75;
-  }
-  
   .container {
-    max-width: min(1280px, 90vw) !important;
+    max-width: 1366px !important;
+    transform: scale(0.75);
+    transform-origin: center !important;
+    margin: 0 auto !important;
+    position: relative !important;
   }
-  
-  /* Prevent text from being too large on small screens */
-  .text-xl, .text-2xl {
-    font-size: 1rem;
+
+  /* Navbar specific styles for 1080p */
+  nav {
+    height: 4rem !important;
+    display: flex !important;
+    align-items: center !important;
+    transform-origin: top center !important;
   }
-  
-  .text-3xl, .text-4xl {
-    font-size: 1.25rem;
+
+  nav .container {
+    height: 100% !important;
+    transform-origin: center !important;
   }
-  
-  .text-5xl, .text-6xl {
-    font-size: 1.5rem;
+
+  nav .container > div {
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  nav .text-xl {
+    font-size: 1.25rem !important;
+  }
+
+  nav [class*="rounded-2xl"] {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1rem !important;
+  }
+
+  nav [class*="rounded-full"] {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
   }
 }
 
