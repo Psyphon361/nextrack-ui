@@ -1,4 +1,4 @@
-# NexTrack UI - Supply Chain Management on Blockchain
+# NexTrack - Next Gen Supply Chain Tracking on Blockchain
 
 NexTrack is a decentralized supply chain management platform built for the Web3 era. This project was developed as part of Electroneum Hackathon 2025 to demonstrate the power of blockchain technology in revolutionizing supply chain transparency and traceability.
 
@@ -24,7 +24,7 @@ NexTrack is a decentralized supply chain management platform built for the Web3 
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/Psyphon361/nextrack-ui.git
 cd nextrack-ui
 ```
 
