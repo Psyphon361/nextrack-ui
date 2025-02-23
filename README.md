@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NexTrack UI - Supply Chain Management on Blockchain
 
-## Getting Started
+NexTrack is a decentralized supply chain management platform built for the Web3 era. This project was developed as part of Electroneum Hackathon 2025 to demonstrate the power of blockchain technology in revolutionizing supply chain transparency and traceability.
 
-First, run the development server:
+## 🌟 Features
+
+- 🔗 Blockchain-based supply chain tracking
+- 📦 Batch registration and management
+- 🏪 Marketplace for product trading
+- 📱 Modern UI built with Next.js
+- 🖼️ IPFS integration for decentralized file storage
+- 🔐 Web3 authentication using WalletConnect
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- A Web3 wallet (MetaMask or Rabby recommended)
+- [Pinata](https://www.pinata.cloud/) account for IPFS storage
+
+### Environment Setup
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd nextrack-ui
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Create a `.env.local` file in the root directory with the following variables:
+```env
+NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt_token
+```
+
+> **Important**: You'll need to obtain a JWT token from your Pinata dashboard. This is required for IPFS file storage functionality. You can create free account at [Pinata](https://www.pinata.cloud/).
+
+### Development
+
+To run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Building for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+# or
+yarn build
+yarn start
+```
 
-## Learn More
+## 🏗️ Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+- `/src/app` - Next.js application routes and pages
+- `/src/components` - Reusable React components
+- `/contracts` - Smart contract related files
+- `/public` - Static assets
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔧 Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Frontend Framework**: Next.js 15.1
+- **Smart Contract Integration**: ethers.js, wagmi
+- **Authentication**: Web3Modal
+- **UI Components**: TailwindCSS, Framer Motion
+- **File Storage**: IPFS (via Pinata)
+- **State Management**: TanStack Query (React Query)
 
-## Deploy on Vercel
+## 🤝 Contributing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This project was created for a hackathon, but contributions are welcome! Please feel free to submit issues and pull requests.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - The React Framework for Production
+- [WalletConnect](https://walletconnect.com/) - Web3 Authentication
+- [Pinata](https://www.pinata.cloud/) - IPFS Storage Solutions
+- [Vercel](https://vercel.com/) - Deployment Platform
+
+---
+
+Built with ❤️ for the Web3 community
