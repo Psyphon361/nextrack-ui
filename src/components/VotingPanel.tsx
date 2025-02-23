@@ -2,20 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useContractRead } from 'wagmi';
-import { Address } from 'viem';
+import { Address, isAddress } from 'viem';
 import toast from 'react-hot-toast';
-
-// Define ProposalState enum here since it's used only in this component
-enum ProposalState {
-  Pending,
-  Active,
-  Canceled,
-  Defeated,
-  Succeeded,
-  Queued,
-  Expired,
-  Executed
-}
+import { ProposalState } from '@/types/dao';
 
 interface VotingPanelProps {
   proposal: {
@@ -101,7 +90,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
   const [selectedVote, setSelectedVote] = useState<VoteType | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showDelegateInput, setShowDelegateInput] = useState(false);
-  const tooltipTimeout = useRef<NodeJS.Timeout>();
+  const tooltipTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const [isDelegating, setIsDelegating] = useState(false);
   const [votingPower, setVotingPower] = useState(0);
   const [hasDelegatedToSelf, setHasDelegatedToSelf] = useState(false);
@@ -112,8 +101,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     address: govTokenAddress,
     abi: govTokenABI,
     functionName: 'balanceOf',
-    args: [address as Address],
-    enabled: !!address,
+    args: address ? [address as Address] : undefined,
   });
 
   // Get current delegate
@@ -121,8 +109,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     address: govTokenAddress,
     abi: govTokenABI,
     functionName: 'delegates',
-    args: [address as Address],
-    enabled: !!address,
+    args: address ? [address as Address] : undefined,
   });
 
   // Check if user has delegated to themselves
@@ -137,8 +124,7 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     address: govTokenAddress,
     abi: govTokenABI,
     functionName: 'getVotes',
-    args: [address],
-    enabled: !!address,
+    args: address ? [address] : undefined,
   });
 
   useEffect(() => {
@@ -163,7 +149,6 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     abi: govTokenABI,
     functionName: 'delegates',
     args: address ? [address] : undefined,
-    enabled: !!address,
   }) as { data: Address | undefined, refetch: () => Promise<any> };
 
   // Update voting power when delegation succeeds

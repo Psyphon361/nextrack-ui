@@ -98,7 +98,7 @@
 }
 
 .text-lg {
-  font-size: calc(1.125rem * var(--scale-factor));
+  font-size: calc(1.15rem * var(--scale-factor));
 }
 
 .text-xl {

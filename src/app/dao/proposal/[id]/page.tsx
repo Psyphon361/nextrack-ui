@@ -8,9 +8,7 @@ import { motion } from 'framer-motion';
 import { toast, Toaster } from 'react-hot-toast';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { keccak256, toBytes, Address } from 'viem';
-import { encodeFunctionData } from 'viem';
-import { nexTrackABI } from '@/constants/abi';
-import { NEXTRACK_ADDRESS, GOVERNOR_ADDRESS } from '@/constants/addresses';
+import { GOVERNOR_ADDRESS } from '@/constants/addresses';
 import { useProposals } from '@/hooks/useProposals';
 import { ProposalState } from '@/types/dao';
 import Navigation from '@/components/Navigation';
@@ -49,17 +47,6 @@ const governorABI = [{
 
 // Keep using GOVERNOR_ADDRESS for consistency with existing code
 const governorAddress = GOVERNOR_ADDRESS as Address;
-
-enum ProposalState {
-  Pending,
-  Active,
-  Canceled,
-  Defeated,
-  Succeeded,
-  Queued,
-  Expired,
-  Executed
-}
 
 const getStateColor = (state: ProposalState) => {
   switch (state) {
@@ -131,12 +118,13 @@ const formatTimestamp = (timestamp: string | number | undefined): string => {
   }
 };
 
-function CountdownTimer({ targetDate, type }: { targetDate: Date, type: 'start' | 'end' }) {
+function CountdownTimer({ targetDate, type }: { targetDate: number | Date, type: 'start' | 'end' }) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const seconds = differenceInSeconds(targetDate, new Date());
+      const targetDateTime = targetDate instanceof Date ? targetDate : new Date(targetDate);
+      const seconds = differenceInSeconds(targetDateTime, new Date());
       if (seconds <= 0) {
         setTimeLeft(type === 'start' ? 'Started' : 'Ended');
         clearInterval(timer);
@@ -152,36 +140,28 @@ function CountdownTimer({ targetDate, type }: { targetDate: Date, type: 'start' 
   return <span className="font-mono">{timeLeft}</span>;
 }
 
-function CopyableAddress({ address, label }: { address: string; label: string }) {
+function CopyableAddress({ address, label, className }: { address: string; label: string; className?: string }) {
   const [copied, setCopied] = useState(false);
 
-  const handleCopy = () => {
+  const copyToClipboard = () => {
     navigator.clipboard.writeText(address);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="space-y-2">
-      <p className="text-base font-medium text-gray-400 uppercase tracking-wider">{label}</p>
-      <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50 flex items-center justify-between">
-        <div 
-          onClick={handleCopy}
-          className="font-mono text-base text-white cursor-pointer hover:text-blue-400 transition-colors duration-300 break-all"
-        >
-          {address}
-        </div>
-        <button 
-          onClick={handleCopy}
-          className="text-gray-400 hover:text-white transition-colors duration-300 ml-3 flex-shrink-0"
-          aria-label="Copy address"
-        >
-          {copied ? (
-            <CheckIcon className="w-5 h-5 text-green-500" />
-          ) : (
-            <DocumentDuplicateIcon className="w-5 h-5" />
-          )}
-        </button>
+    <div className="flex flex-col space-y-1">
+      <span className="text-sm text-gray-400">{label}</span>
+      <div
+        className={`flex items-center space-x-2 cursor-pointer group ${className}`}
+        onClick={copyToClipboard}
+      >
+        <span className="text-white truncate">{address}</span>
+        {copied ? (
+          <CheckIcon className="h-4 w-4 text-green-500" />
+        ) : (
+          <DocumentDuplicateIcon className="h-4 w-4 text-gray-500 group-hover:text-gray-400" />
+        )}
       </div>
     </div>
   );
@@ -278,7 +258,7 @@ const getNextState = (currentState: ProposalState) => {
 const getStateLabel = (state: ProposalState) => {
   switch (state) {
     case ProposalState.Pending:
-      return 'Created';
+      return 'Pending';
     case ProposalState.Active:
       return 'Active';
     case ProposalState.Canceled:
@@ -442,8 +422,7 @@ export default function ProposalDetails() {
     address: governorAddress,
     abi: governorABI,
     functionName: 'proposalEta',
-    args: params.id ? [BigInt(params.id)] : undefined,
-    enabled: !!params.id,
+    args: params.id ? [BigInt(Array.isArray(params.id) ? params.id[0] : params.id)] : undefined
   });
 
   const { timeLeft, canExecute } = ExecuteTimer({
@@ -476,29 +455,20 @@ export default function ProposalDetails() {
 
   // Handle success state
   useEffect(() => {
-    const handleSuccess = async () => {
-      if (isSuccess && txPending) {
-        const message = proposal?.state === ProposalState.Succeeded
-          ? 'Proposal queued successfully!'
-          : 'Proposal executed successfully!';
-
-        toast.success(message, {
-          id: 'gov-tx',
-          duration: 3000,
-        });
-
-        // Refresh data
-        await Promise.all([
-          refreshProposals(),
-          refetchEta()
-        ]);
-
-        setTxPending(false);
-      }
-    };
-
-    handleSuccess();
-  }, [isSuccess, proposal?.state, txPending, refreshProposals, refetchEta]);
+    if (isSuccess && txPending) {
+      toast.success('Transaction successful!', {
+        id: 'gov-tx',
+        duration: 3000,
+      });
+      setTxPending(false);
+      
+      // Wait for blockchain to update
+      setTimeout(() => {
+        refreshProposals();
+        refetchEta?.();
+      }, 2000);
+    }
+  }, [isSuccess, txPending, refreshProposals, refetchEta]);
 
   // Reset txPending if transaction is not in a pending state
   useEffect(() => {
@@ -587,9 +557,21 @@ export default function ProposalDetails() {
     }
   };
 
-  if (!proposal) return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black" />
-  );
+  if (!proposal) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-white">
+        <Navigation />
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center h-[60vh]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+              <p className="text-lg text-gray-400">Loading proposal details...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const proposalState = Number(proposal.state);
 
@@ -657,7 +639,7 @@ export default function ProposalDetails() {
                   } mb-2 ${
                     isCurrentStep ? 'ring-4 ring-offset-2 ring-offset-gray-900 ring-opacity-60' : ''
                   }`} />
-                  <span className={`text-lg font-medium ${
+                  <span className={`text-md font-medium ${
                     isActive 
                       ? `text-${step.color}-500` 
                       : isUpcoming 

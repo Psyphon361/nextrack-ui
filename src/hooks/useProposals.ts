@@ -1,21 +1,11 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
+import { ProposalState } from '@/types/dao';
 
 const GOVERNOR_ADDRESS = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801';
 const RPC_URL = 'https://rpc.ankr.com/electroneum_testnet/15266e093685caca47b9a524ba83c22259a0590c105a2b4c5c5b2a7c2d0c7f0c';
 const BLOCK_TIME = 5; // Electroneum block time in seconds
 const DEBOUNCE_TIME = 2000; // 2 seconds debounce for refreshing
-
-export enum ProposalState {
-  Pending,
-  Active,
-  Canceled,
-  Defeated,
-  Succeeded,
-  Queued,
-  Expired,
-  Executed
-}
 
 export interface Proposal {
   id: string;
@@ -89,18 +79,18 @@ const governorABI = [
   {
     "type": "function",
     "name": "state",
-    "inputs": [{"type": "uint256", "name": "proposalId"}],
-    "outputs": [{"type": "uint8"}],
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
+    "outputs": [{ "type": "uint8" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "proposalVotes",
-    "inputs": [{"type": "uint256", "name": "proposalId"}],
+    "inputs": [{ "type": "uint256", "name": "proposalId" }],
     "outputs": [
-      {"type": "uint256", "name": "againstVotes"},
-      {"type": "uint256", "name": "forVotes"},
-      {"type": "uint256", "name": "abstainVotes"}
+      { "type": "uint256", "name": "againstVotes" },
+      { "type": "uint256", "name": "forVotes" },
+      { "type": "uint256", "name": "abstainVotes" }
     ],
     "stateMutability": "view"
   }
@@ -117,16 +107,16 @@ const extractManufacturerAddress = (calldata: string): string => {
 const calculateVoteTiming = async (provider: ethers.Provider, startBlock: bigint, endBlock: bigint) => {
   const currentBlock = await provider.getBlockNumber();
   const currentBlockBigInt = BigInt(currentBlock);
-  
+
   const now = Date.now();
-  
+
   // Calculate seconds until start and end relative to current block
   const blocksUntilStart = startBlock - currentBlockBigInt;
   const blocksUntilEnd = endBlock - currentBlockBigInt;
-  
+
   const secondsUntilStart = Number(blocksUntilStart) * BLOCK_TIME;
   const secondsUntilEnd = Number(blocksUntilEnd) * BLOCK_TIME;
-  
+
   console.log('Vote timing calculation:', {
     currentBlock,
     startBlock: startBlock.toString(),
@@ -136,7 +126,7 @@ const calculateVoteTiming = async (provider: ethers.Provider, startBlock: bigint
     secondsUntilStart,
     secondsUntilEnd
   });
-  
+
   return {
     voteStart: new Date(now + secondsUntilStart * 1000),
     voteEnd: new Date(now + secondsUntilEnd * 1000)
@@ -147,7 +137,7 @@ export function useProposals() {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const refreshTimeoutRef = useRef<NodeJS.Timeout>();
+  const refreshTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const isFetchingRef = useRef(false);
 
   const fetchProposals = useCallback(async () => {
@@ -168,7 +158,7 @@ export function useProposals() {
       const filter = contract.filters.ProposalCreated();
       const events = await contract.queryFilter(filter);
 
-      const proposalPromises = events.map(async (event) => {
+      const proposalPromises = events.map(async (event: any) => {
         const args = event.args;
         if (!args) return null;
 
@@ -190,30 +180,30 @@ export function useProposals() {
           try {
             // First try to get raw values
             const rawValues = args.values;
-            
+
             // If it's an array-like object, convert it to array
             const valueArray = Array.from(rawValues);
-            
+
             // Map each value
             values = valueArray.map(v => {
               // If it's already a bigint, return it
               if (typeof v === 'bigint') return v;
-              
+
               // If it's a BigNumber or similar object with hex
               if (typeof v === 'object' && v !== null && '_hex' in v) {
-                return BigInt(v._hex);
+                return BigInt((v as { _hex: string })._hex);
               }
-              
+
               // If it's a regular number
               if (typeof v === 'number') {
                 return BigInt(v);
               }
-              
+
               // If it's a numeric string
               if (typeof v === 'string' && /^[0-9]+$/.test(v)) {
                 return BigInt(v);
               }
-              
+
               // For any other case, try toString() if available
               if (v && typeof v.toString === 'function') {
                 const str = v.toString();
@@ -221,14 +211,14 @@ export function useProposals() {
                   return BigInt(str);
                 }
               }
-              
+
               // Default case
               console.warn('Using default value 0 for:', v);
-              return 0n;
+              return BigInt(0);
             });
           } catch (err) {
             console.error('Error processing values array:', err);
-            values = [0n]; // Default to single zero value
+            values = [BigInt(0)]; // Default to single zero value
           }
 
           return {

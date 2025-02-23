@@ -131,7 +131,7 @@ export default function MarketplacePage() {
     try {
       console.log('Fetching all batch IDs...');
       const batchIds = await contract.getAllBatchIds();
-      console.log('Received batch IDs:', batchIds.map(id => id.toString()));
+      // console.log('Received batch IDs:', batchIds.map(id => id.toString()));
 
       console.log('Fetching registered manufacturers...');
       const registeredManufacturers = await contract.getRegisteredManufacturers();
@@ -147,7 +147,7 @@ export default function MarketplacePage() {
           console.log(`Raw response for batch ${batchId.toString()}:`, details);
 
           // Only add if the batch is listed and has quantity
-          if (details.isListed && details.totalQuantity > 0n) {
+          if (details.isListed && details.totalQuantity > BigInt(0)) {
             const listing: ProductListing = {
               batchId: BigInt(details.batchId.toString()),
               name: details.name,
@@ -229,65 +229,84 @@ export default function MarketplacePage() {
   }, [walletClient]);
 
   const handleRequestProducts = async (listing: ProductListing) => {
-    if (!walletClient) {
-      console.log('No wallet client available');
-      toast.error('Please connect your wallet first', {
-        style: {
-          background: '#333',
-          color: '#fff',
-          borderRadius: '10px',
-        },
-      });
-      return;
-    }
+    if (isRequesting) return;
+    setIsRequesting(true);
 
-    // Create signer instance first to get user's address
-    const signer = await new ethers.BrowserProvider(window.ethereum as any).getSigner();
-    const signerAddress = await signer.getAddress();
-
-    // Check if the user is trying to order their own listing
-    if (listing.owner.toLowerCase() === signerAddress.toLowerCase()) {
-      toast.error('Cannot request own products', {
-        style: {
-          background: '#333',
-          color: '#fff',
-          borderRadius: '10px',
-        },
-      });
-      return;
-    }
-
-    const quantity = requestQuantities[listing.batchId.toString()];
-    if (!quantity || Number(quantity) <= 0) {
-      console.error('Invalid quantity:', quantity);
-      toast.error('Please enter a valid quantity', {
-        style: {
-          background: '#333',
-          color: '#fff',
-          borderRadius: '10px',
-        },
-      });
-      return;
-    }
-
-    // Calculate total amount in 18 decimal precision
-    // listing.unitPrice is already in 18 decimals from the contract
-    const totalAmount = listing.unitPrice * BigInt(quantity);
-    const totalAmountDisplay = Number(listing.unitPrice) * Number(quantity) / 1e18;
-    
-    console.log('Requesting products:', {
-      batchId: listing.batchId.toString(),
-      quantity,
-      unitPrice: (Number(listing.unitPrice) / 1e18).toString(),
-      totalAmount: totalAmount.toString(),
-      totalAmountDisplay: totalAmountDisplay.toString(),
-      listingDetails: listing
+    // Initialize toastId at the start
+    let toastId = toast.loading('Checking approval...', {
+      duration: Infinity,
+      style: {
+        background: '#333',
+        color: '#fff',
+        borderRadius: '10px',
+      },
     });
 
-    setIsRequesting(true);
-    let toastId: string;
-
     try {
+      if (!walletClient) {
+        console.log('No wallet client available');
+        toast.error('Please connect your wallet first', {
+          id: toastId,
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+        setIsRequesting(false);
+        return;
+      }
+
+      // Create signer instance first to get user's address
+      const signer = await new ethers.BrowserProvider(window.ethereum as any).getSigner();
+      const signerAddress = await signer.getAddress();
+
+      // Check if the user is trying to order their own listing
+      if (listing.owner.toLowerCase() === signerAddress.toLowerCase()) {
+        toast.error('Cannot request own products', {
+          id: toastId,
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+        setIsRequesting(false);
+        return;
+      }
+
+      const quantity = requestQuantities[listing.batchId.toString()];
+      if (!quantity || Number(quantity) <= 0) {
+        console.error('Invalid quantity:', quantity);
+        toast.error('Please enter a valid quantity', {
+          id: toastId,
+          duration: 3000,
+          style: {
+            background: '#333',
+            color: '#fff',
+            borderRadius: '10px',
+          },
+        });
+        setIsRequesting(false);
+        return;
+      }
+
+      // Calculate total amount in 18 decimal precision
+      // listing.unitPrice is already in 18 decimals from the contract
+      const totalAmount = listing.unitPrice * BigInt(quantity);
+      const totalAmountDisplay = Number(listing.unitPrice) * Number(quantity) / 1e18;
+      
+      console.log('Requesting products:', {
+        batchId: listing.batchId.toString(),
+        quantity,
+        unitPrice: (Number(listing.unitPrice) / 1e18).toString(),
+        totalAmount: totalAmount.toString(),
+        totalAmountDisplay: totalAmountDisplay.toString(),
+        listingDetails: listing
+      });
+
       // Create contract instances with signer
       const musdtWithSigner = new ethers.Contract(
         MUSDT_ADDRESS,
@@ -318,6 +337,8 @@ export default function MarketplacePage() {
 
       if (balance < totalAmount) {
         toast.error('Insufficient mUSDT Balance!', {
+          id: toastId,
+          duration: 3000,
           style: {
             background: '#333',
             color: '#fff',
@@ -327,19 +348,11 @@ export default function MarketplacePage() {
         setIsRequesting(false);
         return;
       }
-      
-      // Check current allowance
-      console.log('Checking current mUSDT allowance...');
       const currentAllowance = await musdtWithSigner.allowance(signerAddress, VAULT_ADDRESS);
-      console.log('Current allowance (raw):', currentAllowance.toString());
-      console.log('Current allowance (display):', Number(currentAllowance) / 1e18);
-      console.log('Required amount (raw):', totalAmount.toString());
-      console.log('Required amount (display):', totalAmountDisplay);
-
       // Compare amounts in their raw 18 decimal precision
       if (currentAllowance < totalAmount) {
-        toastId = toast.loading(`Approving ${totalAmountDisplay} mUSDT spend...`, {
-          duration: Infinity,
+        toast.loading('Approving mUSDT spend...', {
+          id: toastId,
           style: {
             background: '#333',
             color: '#fff',
@@ -347,7 +360,6 @@ export default function MarketplacePage() {
           },
         });
 
-        console.log('Current allowance insufficient, approving vault to spend mUSDT...');
         const approveTx = await musdtWithSigner.approve(VAULT_ADDRESS, totalAmount);
         console.log('Approval transaction sent! Hash:', approveTx.hash);
         
@@ -377,8 +389,8 @@ export default function MarketplacePage() {
       }
 
       // Step 2: Request product batch
-      toastId = toast.loading(`Requesting products for ${totalAmountDisplay} mUSDT...`, {
-        duration: Infinity,
+      toast.loading(`Requesting products for $${totalAmountDisplay}`, {
+        id: toastId,
         style: {
           background: '#333',
           color: '#fff',
@@ -432,7 +444,17 @@ export default function MarketplacePage() {
       }
 
       // Handle user rejection separately
-      if (error.code === 4001 || error?.info?.error?.code === 4001 || error.message?.includes('user rejected')) {
+      const isUserRejection = (
+        (typeof error === 'object' && error !== null && (
+          'code' in error && error.code === 4001 ||
+          'info' in error && typeof error.info === 'object' && error.info !== null && 
+          'error' in error.info && typeof error.info.error === 'object' && error.info.error !== null && 
+          'code' in error.info.error && error.info.error.code === 4001
+        )) ||
+        (error instanceof Error && error.message?.includes('user rejected'))
+      );
+
+      if (isUserRejection) {
         toast.error('Transaction cancelled', {
           id: toastId,
           duration: 3000,

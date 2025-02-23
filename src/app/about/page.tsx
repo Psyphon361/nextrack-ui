@@ -4,7 +4,31 @@ import { motion } from 'framer-motion';
 import { TeamIcon, InnovationIcon } from '@/components/icons';
 import Navigation from '@/components/Navigation';
 
-const teamMembers = [
+interface IconProps {
+  className?: string;
+}
+
+interface ItemWithIcon {
+  title: string;
+  description: string;
+  icon: React.FC<IconProps>;
+  color: string;
+}
+
+interface TeamMember {
+  name: string;
+  role: string;
+  description: string;
+  color: string;
+}
+
+interface Value {
+  title: string;
+  description: string;
+  color: string;
+}
+
+const teamMembers: TeamMember[] = [
   {
     name: 'The Development Team',
     role: 'Core Engineers',
@@ -25,7 +49,7 @@ const teamMembers = [
   }
 ];
 
-const values = [
+const values: Value[] = [
   {
     title: 'Innovation',
     description: 'We constantly push the boundaries of what\'s possible in supply chain management.',
@@ -39,6 +63,21 @@ const values = [
   {
     title: 'Security',
     description: 'We prioritize the security and integrity of our users\' data above all else.',
+    color: 'from-purple-600 to-pink-600'
+  }
+];
+
+const missionAndVision: ItemWithIcon[] = [
+  {
+    title: 'Our Mission',
+    description: 'At NexTrack, we\'re committed to revolutionizing supply chain management through blockchain technology. Our mission is to bring transparency, security, and efficiency to global supply chains.',
+    icon: InnovationIcon as React.FC<IconProps>,
+    color: 'from-blue-600 to-indigo-600'
+  },
+  {
+    title: 'Our Vision',
+    description: 'We envision a future where every product\'s journey is transparent and verifiable, where consumers can trust the authenticity of their purchases, and where businesses can operate with unprecedented efficiency.',
+    icon: TeamIcon as React.FC<IconProps>,
     color: 'from-purple-600 to-pink-600'
   }
 ];
@@ -72,20 +111,7 @@ export default function AboutPage() {
       {/* Mission & Vision Section */}
       <div className="container mx-auto px-6 py-24">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {[
-            {
-              title: 'Our Mission',
-              description: 'At NexTrack, we\'re committed to revolutionizing supply chain management through blockchain technology. Our mission is to bring transparency, security, and efficiency to global supply chains.',
-              icon: InnovationIcon,
-              color: 'from-blue-600 to-indigo-600'
-            },
-            {
-              title: 'Our Vision',
-              description: 'We envision a future where every product\'s journey is transparent and verifiable, where consumers can trust the authenticity of their purchases, and where businesses can operate with unprecedented efficiency.',
-              icon: TeamIcon,
-              color: 'from-purple-600 to-pink-600'
-            }
-          ].map((item, index) => (
+          {missionAndVision.map((item: ItemWithIcon, index) => (
             <div
               key={item.title}
               className="relative group"

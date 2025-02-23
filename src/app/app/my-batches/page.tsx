@@ -225,7 +225,7 @@ export default function MyBatchesPage() {
         if (!mounted) return;
         console.log('getCurrentInventory response:', batchIds);
         console.log('Number of batches found:', batchIds.length);
-        console.log('Batch IDs:', batchIds.map(id => id.toString()));
+        // console.log('Batch IDs:', batchIds.map(id => id.toString()));
 
         if (!batchIds || batchIds.length === 0) {
           console.log('No batch IDs found in response');
@@ -370,7 +370,18 @@ export default function MyBatchesPage() {
       });
     } catch (err) {
       console.error('Error delisting batch:', err);
-      if (err.code === 4001 || err?.info?.error?.code === 4001 || err.message?.includes('user rejected')) {
+      
+      const isUserRejection = (
+        (typeof err === 'object' && err !== null && (
+          'code' in err && err.code === 4001 ||
+          'info' in err && typeof err.info === 'object' && err.info !== null && 
+          'error' in err.info && typeof err.info.error === 'object' && err.info.error !== null && 
+          'code' in err.info.error && err.info.error.code === 4001
+        )) ||
+        (err instanceof Error && err.message?.includes('user rejected'))
+      );
+
+      if (isUserRejection) {
         toast.error('Transaction cancelled', {
           id: toastId,
           duration: 3000,
@@ -450,7 +461,13 @@ export default function MyBatchesPage() {
       });
     } catch (err) {
       console.error('Error Listing batch:', err);
-      if (err.code === 4001 || err?.info?.error?.code === 4001 || err.message?.includes('user rejected')) {
+      const isUserRejection = (
+        (err as any).code === 4001 ||
+        (err as any).info?.error?.code === 4001 ||
+        (err as Error).message?.includes('user rejected')
+      );
+
+      if (isUserRejection) {
         toast.error('Transaction cancelled', {
           id: toastId,
           duration: 3000,
@@ -802,7 +819,7 @@ export default function MyBatchesPage() {
                             <p className="text-gray-400 text mb-1">Status</p>
                             <div className="flex items-center space-x-2">
                               <span className={`font-semibold text-md ${batch.isListed ? 'text-green-400' : 'text-red-400'}`}>
-                                {batch.isListed ? 'Listed' : 'Not Listed'}
+                                {batch.isListed ? 'Listed' : 'Delisted'}
                               </span>
                               {batch.isListed ? (
                                 <button

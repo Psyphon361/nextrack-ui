@@ -5,17 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-
-enum ProposalState {
-  Pending,
-  Active,
-  Canceled,
-  Defeated,
-  Succeeded,
-  Queued,
-  Expired,
-  Executed
-}
+import { ProposalState } from '@/types/dao';
 
 function getProposalStateLabel(state: ProposalState): { label: string; className: string } {
   const stateMap = {
@@ -103,7 +93,7 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
                     }))}
                     className="px-3 py-1 bg-gray-900/90 rounded-full text-sm font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
                   >
-                    <span>Proposal #{proposal.id}</span>
+                    <span>#{proposal.id}</span>
                     <svg
                       className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                       fill="none"
@@ -172,7 +162,7 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
                     <p className="text font-medium text-gray-400 uppercase tracking-wider">Voting Ends</p>
                     <div className="space-y-1">
                       <div className="text-lg text-base font-semibold text-white">
-                        <CountdownTimer targetDate={proposal.voteStart} type="end" />
+                        <CountdownTimer targetDate={proposal.voteEnd} type="end" />
                       </div>
                       <p className="text-sm text-gray-500">
                         [{format(proposal.voteEnd, 'MMM d, yyyy HH:mm')}]

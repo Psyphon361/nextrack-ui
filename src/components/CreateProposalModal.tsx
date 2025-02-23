@@ -220,7 +220,7 @@ export default function CreateProposalModal({ isOpen, onClose }: CreateProposalM
       // Prepare proposal parameters
       const args = [
         [NEXTRACK_ADDRESS], // targets
-        [0n], // values
+        [BigInt(0)], // values
         [calldata], // calldatas
         description, // description
       ] as const;

@@ -43,11 +43,11 @@ enum RequestStatus {
   Completed
 }
 
-const REQUEST_STATUS_LABELS = {
-  0: 'Pending',
-  1: 'Approved',
-  2: 'Rejected',
-  3: 'Completed'
+const REQUEST_STATUS_LABELS: { [key in RequestStatus]: string } = {
+  [RequestStatus.Pending]: 'Pending',
+  [RequestStatus.Approved]: 'Approved',
+  [RequestStatus.Rejected]: 'Rejected',
+  [RequestStatus.Completed]: 'Completed'
 };
 
 export default function RequestsPage() {
@@ -77,7 +77,7 @@ export default function RequestsPage() {
       // Get all request IDs for the seller
       const requestIds = await readOnlyContract.getSellerTransferRequests(address);
       console.log('📋 Request IDs - Raw Response:', requestIds);
-      console.log('📋 Request IDs - Mapped:', requestIds.map(id => id.toString()));
+      // console.log('📋 Request IDs - Mapped:', requestIds.map(id => id.toString()));
       
       // Create a map to store batch details to avoid duplicate calls
       const batchDetailsCache = new Map();
@@ -577,7 +577,7 @@ export default function RequestsPage() {
           </div>
         ) : displayedRequests.length === 0 ? (
           <div className="text-center text-gray-400 py-12">
-            <p className="text-lg">No {statusFilter === undefined ? '' : REQUEST_STATUS_LABELS[statusFilter]} requests found</p>
+            <p className="text-lg">No {statusFilter !== undefined ? REQUEST_STATUS_LABELS[statusFilter as RequestStatus] : ''} requests found</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -649,14 +649,16 @@ export default function RequestsPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-gray-400 text-sm mb-1">Status</p>
-                      <p className={`font-semibold text-lg ${
-                        request.status === 0 ? 'text-yellow-400' :
-                        request.status === 1 ? 'text-green-400' :
-                        request.status === 2 ? 'text-red-400' :
-                        'text-blue-400'
-                      }`}>
-                        {REQUEST_STATUS_LABELS[request.status]}
-                      </p>
+                      <div className="flex items-center space-x-2">
+                        <p className={`font-semibold text-lg ${
+                          request.status === RequestStatus.Pending ? 'text-yellow-400' :
+                          request.status === RequestStatus.Approved ? 'text-green-400' :
+                          request.status === RequestStatus.Rejected ? 'text-red-400' :
+                          'text-blue-400'
+                        }`}>
+                          {REQUEST_STATUS_LABELS[request.status as RequestStatus]}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
