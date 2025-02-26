@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useContractRead } from 'wagmi';
+import { useAccount, useReadContract, useWriteContract, useWaitForTransactionReceipt, useContractRead, useConnect } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { Address, isAddress } from 'viem';
 import toast from 'react-hot-toast';
 import { ProposalState } from '@/types/dao';
@@ -83,6 +84,7 @@ const governorABI = [{
 
 export default function VotingPanel({ proposal }: VotingPanelProps) {
   const { address } = useAccount();
+  const { connect } = useConnect();
   const [delegateAddress, setDelegateAddress] = useState('');
   const [isValidAddress, setIsValidAddress] = useState(false);
   const [addressError, setAddressError] = useState('');
@@ -307,6 +309,15 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     }, 100);
   };
 
+  // Simple connect wallet handler
+  const handleConnect = async () => {
+    try {
+      await connect({ connector: injected() });
+    } catch (error) {
+      console.error('Failed to connect:', error);
+    }
+  };
+
   if (!proposal) {
     return null;
   }
@@ -334,128 +345,144 @@ export default function VotingPanel({ proposal }: VotingPanelProps) {
     <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-700/50">
       <div className="space-y-6">
         {/* Token Balance */}
-        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-700/30">
-          <div>
-            <h3 className="text-md font-medium text-gray-400">$NXT Balance</h3>
-            <p className="text-2xl font-bold text-white pt-2">
-              {nxtBalance ? (Number(nxtBalance) / 1e18).toLocaleString() : '0'} NXT
-            </p>
+        {address && (
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-700/30">
+            <div>
+              <h3 className="text-md font-medium text-gray-400">$NXT Balance</h3>
+              <p className="text-2xl font-bold text-white pt-2">
+                {nxtBalance ? (Number(nxtBalance) / 1e18).toLocaleString() : '0'} NXT
+              </p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Voting Power Section */}
         <div>
-          <button
-            onClick={handleParticipate}
-            disabled={isDelegating || hasDelegatedToSelf || !isVotingEnabled}
-            className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
-          >
-            {isDelegating ? 'Setting up...' : hasDelegatedToSelf ? 'Self Delegated' : !isVotingEnabled ? 'Voting is not active' : 'Participate in Voting'}
-          </button>
-
-          <div className="relative mt-4">
+          {address && (
             <button
-              onMouseEnter={handleTooltipEnter}
-              onMouseLeave={handleTooltipLeave}
-              className="text-md text-blue-400 hover:text-blue-300"
+              onClick={handleParticipate}
+              disabled={isDelegating || hasDelegatedToSelf || !isVotingEnabled}
+              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
             >
-              How is my voting power calculated?
+              {isDelegating ? 'Setting up...' : hasDelegatedToSelf ? 'Self Delegated' : !isVotingEnabled ? 'Voting is not active' : 'Participate in Voting'}
             </button>
-            {showTooltip && (
-              <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 rounded-lg shadow-lg text-sm text-gray-300 z-50">
-                <div className="relative">
-                  <div className="space-y-2">
-                    <p>
-                      Your voting power is determined by whether you have delegated your voting rights to yourself.
-                      Each address that has self-delegated gets 1 vote per proposal.
-                    </p>
-                    <p>
-                      Click "Participate in Voting" to set up your voting rights. This is a one-time action that will
-                      allow you to vote on all future proposals.
-                    </p>
+          )}
+          {address && (
+            <div className="relative mt-4">
+              <button
+                onMouseEnter={handleTooltipEnter}
+                onMouseLeave={handleTooltipLeave}
+                className="text-md text-blue-400 hover:text-blue-300"
+              >
+                How is my voting power calculated?
+              </button>
+              {showTooltip && (
+                <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-gray-900 rounded-lg shadow-lg text-sm text-gray-300 z-50">
+                  <div className="relative">
+                    <div className="space-y-2">
+                      <p>
+                        Your voting power is determined by whether you have delegated your voting rights to yourself.
+                        Each address that has self-delegated gets 1 vote per proposal.
+                      </p>
+                      <p>
+                        Click "Participate in Voting" to set up your voting rights. This is a one-time action that will
+                        allow you to vote on all future proposals.
+                      </p>
+                    </div>
+                    <div className="absolute -bottom-2 left-4 w-3 h-3 bg-gray-900 transform rotate-45"></div>
                   </div>
-                  <div className="absolute -bottom-2 left-4 w-3 h-3 bg-gray-900 transform rotate-45"></div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Voting Section */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Cast Your Vote</h3>
-          {!isVotingEnabled && (
-            <div className="text-yellow-500 mb-4">
-              Voting is not active for this proposal.
-            </div>
-          )}
-          <div className="flex flex-col space-y-4 max-w-xl mx-auto">
-            <button
-              onClick={() => setSelectedVote(VoteType.For)}
-              disabled={txPending}
-              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.For
-                  ? 'bg-green-500/20 border-green-500'
-                  : 'border-gray-700/50 hover:border-green-500/50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <div className="text-xl font-medium text-green-500">For</div>
-              <div className="text text-gray-400 mt-1">Vote in favor of the proposal</div>
-            </button>
+          {address ? (
+            <>
+              <h3 className="text-lg font-semibold">Cast Your Vote</h3>
+              {!isVotingEnabled && (
+                <div className="text-yellow-500 mb-4">
+                  Voting is not active for this proposal.
+                </div>
+              )}
+              <div className="flex flex-col space-y-4 max-w-xl mx-auto">
+                <button
+                  onClick={() => setSelectedVote(VoteType.For)}
+                  disabled={txPending}
+                  className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.For
+                      ? 'bg-green-500/20 border-green-500'
+                      : 'border-gray-700/50 hover:border-green-500/50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <div className="text-xl font-medium text-green-500">For</div>
+                  <div className="text text-gray-400 mt-1">Vote in favor of the proposal</div>
+                </button>
 
-            <button
-              onClick={() => setSelectedVote(VoteType.Against)}
-              disabled={txPending}
-              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Against
-                  ? 'bg-red-500/20 border-red-500'
-                  : 'border-gray-700/50 hover:border-red-500/50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <div className="text-xl font-medium text-red-500">Against</div>
-              <div className="text text-gray-400 mt-1">Vote against the proposal</div>
-            </button>
+                <button
+                  onClick={() => setSelectedVote(VoteType.Against)}
+                  disabled={txPending}
+                  className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Against
+                      ? 'bg-red-500/20 border-red-500'
+                      : 'border-gray-700/50 hover:border-red-500/50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <div className="text-xl font-medium text-red-500">Against</div>
+                  <div className="text text-gray-400 mt-1">Vote against the proposal</div>
+                </button>
 
-            <button
-              onClick={() => setSelectedVote(VoteType.Abstain)}
-              disabled={txPending}
-              className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Abstain
-                  ? 'bg-gray-500/20 border-gray-500'
-                  : 'border-gray-700/50 hover:border-gray-500/50'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-            >
-              <div className="text-xl font-medium text-gray-400">Abstain</div>
-              <div className="text text-gray-400 mt-1">Formally abstain from voting</div>
-            </button>
+                <button
+                  onClick={() => setSelectedVote(VoteType.Abstain)}
+                  disabled={txPending}
+                  className={`p-6 rounded-xl border transition-all duration-300 ${selectedVote === VoteType.Abstain
+                      ? 'bg-gray-500/20 border-gray-500'
+                      : 'border-gray-700/50 hover:border-gray-500/50'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <div className="text-xl font-medium text-gray-400">Abstain</div>
+                  <div className="text text-gray-400 mt-1">Formally abstain from voting</div>
+                </button>
 
-            <textarea
-              placeholder="Add a comment (required)"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              disabled={!hasDelegatedToSelf || !isVotingEnabled || txPending}
-              className="w-full mb-5 h-48 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
+                <textarea
+                  placeholder="Add a comment (required)"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  disabled={!hasDelegatedToSelf || !isVotingEnabled || txPending}
+                  className="w-full mb-5 h-48 bg-gray-900/50 border border-gray-700/50 rounded-xl px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
 
-            <button
-              onClick={handleVoteSubmit}
-              disabled={!hasDelegatedToSelf || selectedVote === null || !comment.trim() || !isVotingEnabled || txPending}
-              className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
-            >
-              {txPending
-                ? isPending
-                  ? "Confirm in wallet..."
-                  : isTxLoading
-                    ? "Casting vote..."
-                    : "Processing..."
-                : !isVotingEnabled
-                  ? proposal.state === 0
-                    ? "Voting hasn't started"
-                    : "Voting has ended"
-                  : "Submit Vote"}
-            </button>
-          </div>
-
-          {!address && (
-            <div className="mt-4 text-yellow-500 text-center">
-              Connect your wallet to vote
+                <button
+                  onClick={handleVoteSubmit}
+                  disabled={!hasDelegatedToSelf || selectedVote === null || !comment.trim() || !isVotingEnabled || txPending}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white rounded-xl font-semibold transition-all duration-300"
+                >
+                  {txPending
+                    ? isPending
+                      ? "Confirm in wallet..."
+                      : isTxLoading
+                        ? "Casting vote..."
+                        : "Processing..."
+                    : !isVotingEnabled
+                      ? proposal.state === 0
+                        ? "Voting hasn't started"
+                        : "Voting has ended"
+                      : "Submit Vote"}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-6">Voting</h3>
+              <p className="text-gray-400 mb-4">
+                You need to connect your wallet to participate in voting.
+              </p>
+              <button
+                onClick={handleConnect}
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300"
+              >
+                Connect Wallet
+              </button>
             </div>
           )}
         </div>

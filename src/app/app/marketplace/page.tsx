@@ -296,7 +296,7 @@ export default function MarketplacePage() {
       // Calculate total amount in 18 decimal precision
       // listing.unitPrice is already in 18 decimals from the contract
       const totalAmount = listing.unitPrice * BigInt(quantity);
-      const totalAmountDisplay = Number(listing.unitPrice) * Number(quantity) / 1e18;
+      const totalAmountDisplay = (Number(listing.unitPrice) * Number(quantity) / 1e18).toFixed(2);
       
       console.log('Requesting products:', {
         batchId: listing.batchId.toString(),
@@ -389,7 +389,7 @@ export default function MarketplacePage() {
       }
 
       // Step 2: Request product batch
-      toast.loading(`Requesting products for $${totalAmountDisplay}`, {
+      toast.loading(`Requesting products for $${Number(totalAmountDisplay).toFixed(2)}`, {
         id: toastId,
         style: {
           background: '#333',
@@ -421,7 +421,7 @@ export default function MarketplacePage() {
       await requestTx.wait();
       console.log('Request confirmed!');
 
-      toast.success(`Products requested successfully for ${totalAmountDisplay} mUSDT!`, {
+      toast.success(`Requested Successfully!`, {
         id: toastId,
         duration: 5000,
         style: {

@@ -7,7 +7,7 @@ import { injected } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Ensure RPC URL is available
-const RPC_URL = ELECTRONEUM_TESTNET_CONFIG.rpcUrls[0] || 'https://rpc.ankr.com/electroneum_testnet';
+const RPC_URL = ELECTRONEUM_TESTNET_CONFIG.rpcUrls[0];
 
 const electroneumTestnet: Chain = {
   id: Number(ELECTRONEUM_TESTNET_CONFIG.chainId),

@@ -227,7 +227,7 @@ const DAOPage = () => {
             {isConnected && (
               <button 
                 onClick={() => setIsProposalModalOpen(true)}
-                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
+                className="px-6 py-2.5 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg"
               >
                 Create New Proposal
               </button>
@@ -237,22 +237,8 @@ const DAOPage = () => {
 
         {/* Main Content Area */}
         <div className="space-y-6">
-          {!isConnected ? (
-            <div className="text-center py-12">
-              <button
-                onClick={handleConnect}
-                disabled={isConnecting}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl font-semibold transition-all duration-300"
-              >
-                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-              </button>
-            </div>
-          ) : (
-            <>
-              {/* Proposal List */}
-              <ProposalList proposals={filteredProposals} isLoading={isLoading} />
-            </>
-          )}
+          {/* Proposal List */}
+          <ProposalList proposals={filteredProposals} isLoading={isLoading} />
         </div>
       </div>
       

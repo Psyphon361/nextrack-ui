@@ -9,6 +9,7 @@ import Navigation from '@/components/Navigation';
 import { CONTRACT_ADDRESSES, CONTRACT_ABIS } from '@/config/contracts';
 import { createPublicClient, http, defineChain } from 'viem';
 import { ELECTRONEUM_TESTNET_CONFIG } from '@/config/contracts';
+import Link from 'next/link';
 
 // Define Electroneum testnet chain
 const electroneumTestnet = defineChain({
@@ -768,7 +769,9 @@ export default function MyBatchesPage() {
                     <div className="flex justify-between items-start">
                       <div className="flex-grow pr-4">
                         <h3 className="text-2xl font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
-                          {batch.name}
+                          <Link href={`/app/product/${batch.batchId}`} className="hover:text-blue-400 transition-colors">
+                            {batch.name}
+                          </Link>
                         </h3>
                         <p className="text-gray-300 text- mb-4 line-clamp-2">{batch.description}</p>
                       </div>

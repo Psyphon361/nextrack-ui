@@ -43,6 +43,13 @@ const REQUEST_STATUS_LABELS: { [key: number]: string } = {
   3: 'Completed'
 };
 
+const RequestStatus = {
+  Pending: 0,
+  Approved: 1,
+  Rejected: 2,
+  Completed: 3
+};
+
 export default function OrdersPage() {
   const { address, isConnected } = useAccount();
   const { readOnlyContract, signerContract } = useNexTrackContract();
@@ -234,6 +241,29 @@ export default function OrdersPage() {
     }
   };
 
+  if (!isConnected) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
+        <Toaster position="bottom-right" />
+        <Navigation />
+        <div className="container mx-auto px-6 py-8">
+          <h1
+            className="text-4xl font-bold font-['Space_Grotesk']"
+            style={{
+              background: 'linear-gradient(to right, #60a5fa, #a855f7)',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              display: 'inline-block'
+            }}
+          >
+            My Orders
+          </h1>
+          <p className="text-gray-300 text-lg mt-5">Please connect your wallet to view your orders.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
       <Navigation />
@@ -317,7 +347,7 @@ export default function OrdersPage() {
             {displayedRequests.map((request) => (
               <div
                 key={request.requestId.toString()}
-                className="space-y-4 bg-gray-800/50 rounded-xl p-6 border border-gray-700/30"
+                className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex-grow pr-4">
@@ -361,7 +391,7 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
-                <div className="border-t border-gray-700/30 pt-4">
+                <div className="border-t border-gray-700/30 pt-3 mt-2">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-gray-400 text-sm mb-1">From</p>
@@ -390,23 +420,41 @@ export default function OrdersPage() {
                   </div>
                 </div>
 
+                {request.status === RequestStatus.Pending && (
+                  <div className="mt-4 flex items-center justify-center p-3 bg-yellow-500/5 rounded-lg border border-yellow-500/10">
+                    <p className="text-yellow-400 text-base">⌛ Awaiting Seller Approval</p>
+                  </div>
+                )}
+                {request.status === RequestStatus.Completed && (
+                  <div className="mt-4 flex items-center justify-center p-3 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                    <p className="text-blue-400 text-base">✓ Request Completed</p>
+                  </div>
+                )}
+                {request.status === RequestStatus.Rejected && (
+                  <div className="mt-4 flex items-center justify-center p-3 bg-red-500/5 rounded-lg border border-red-500/10">
+                    <p className="text-red-400 text-base">✕ Request Rejected</p>
+                  </div>
+                )}
                 {request.status === 1 && (
                   <div className="mt-4">
                     <button
                       onClick={() => handleConfirmReceipt(request.requestId)}
                       disabled={!!processingTx}
-                      className={`w-full ${processingTx
-                          ? 'bg-gray-600 cursor-not-allowed'
-                          : 'bg-green-600 hover:bg-green-700'
-                        } text-white py-2 px-4 rounded-lg font-medium transition-colors`}
+                      className={`w-full ${
+                        processingTx
+                          ? 'bg-gray-800/50 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-green-400/80 to-green-500/80 hover:from-green-500/80 hover:to-green-600/80 shadow-lg shadow-green-500/10'
+                      } text-white py-3 px-6 rounded-xl font-medium transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] group flex items-center justify-center space-x-2`}
                     >
                       {processingTx === `confirm-${request.requestId.toString()}` ? (
                         <span className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white mr-2"></div>
                           Confirming...
                         </span>
                       ) : (
-                        'Confirm Receipt'
+                        <>
+                          <span>Confirm Receipt</span>
+                        </>
                       )}
                     </button>
                   </div>
