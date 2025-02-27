@@ -125,15 +125,18 @@ export default function ProductDetailsPage({ params }: PageParams) {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Image Section */}
             <div className="bg-gradient-to-br from-gray-800/90 via-blue-900/20 to-gray-900/90 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group">
-              <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-xl">
+              <div className="relative aspect-square w-full max-w-md mx-auto">
                 {batchDetails.ipfsUrl ? (
-                  <Image
-                    src={batchDetails.ipfsUrl}
-                    alt={batchDetails.name}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+                  <div className="absolute inset-0 flex">
+                    <Image
+                      src={batchDetails.ipfsUrl}
+                      alt={batchDetails.name}
+                      className="max-h-full max-w-full object-contain" 
+                      width={500}
+                      height={500}
+                      priority
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-gray-700/50 via-gray-600/50 to-gray-700/50 flex items-center justify-center rounded-xl">
                     <p className="text-gray-400">No image available</p>
