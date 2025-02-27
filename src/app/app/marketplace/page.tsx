@@ -83,6 +83,7 @@ interface RequestQuantity {
 export default function MarketplacePage() {
   const [activeTab, setActiveTab] = useState<TabType>('verified');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // commented view switch for now due to some issues, can be enabled later a new feature in a future release
   const [isLoading, setIsLoading] = useState(true);
   const [listings, setListings] = useState<ProductListing[]>([]);
   const [requestQuantities, setRequestQuantities] = useState<RequestQuantity>({});
@@ -522,19 +523,22 @@ export default function MarketplacePage() {
   const renderListing = (listing: ProductListing) => (
     <div
       key={listing.batchId.toString()}
-      className="bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-xl p-4 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group"
+      className={`bg-gradient-to-br from-gray-800 to-gray-900/50 rounded-xl p-4 shadow-2xl border border-gray-700/30 hover:border-blue-500/30 transition-all duration-300 group ${viewMode === 'list' ? 'flex flex-col md:flex-row gap-6' : ''}`}
     >
-      <div className="flex flex-col h-full">
+      <div className={`flex flex-col ${viewMode === 'list' ? 'md:flex-row md:gap-6 w-full' : 'h-full'}`}>
         {/* Product Image */}
-        <div className="relative w-full h-40 mb-3 overflow-hidden rounded-lg bg-gray-800">
+        <div className={`relative ${viewMode === 'list' ? 'w-full md:w-1/3 h-60 md:h-auto' : 'w-full h-60'} mb-3 overflow-hidden rounded-lg bg-gray-800 flex items-center justify-center`}>
           {listing.ipfsUrl ? (
-            <Image
-              src={listing.ipfsUrl}
-              alt={listing.name}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-            />
+            <div className="relative w-full h-full flex items-center justify-center p-2">
+              <Image
+                src={listing.ipfsUrl}
+                alt={listing.name}
+                className="max-h-full max-w-full object-contain hover:scale-105 transition-transform duration-300"
+                width={300}
+                height={300}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+              />
+            </div>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-gray-600">
               <svg
@@ -556,13 +560,13 @@ export default function MarketplacePage() {
         </div>
 
         {/* Product Details */}
-        <div className="space-y-3">
+        <div className={`space-y-3 ${viewMode === 'list' ? 'md:flex-1' : ''}`}>
           <div className="flex justify-between items-start gap-2">
             <div className="flex-grow">
-              <h3 className="text-xl font-bold text-white mb-2">
+              <h3 className="text-xl font-bold text-white mb-2 line-clamp-1">
                 {listing.name}
               </h3>
-              <p className="text-gray-300 text line-clamp-2">{listing.description}</p>
+              <p className="text-gray-300 text line-clamp-2 h-12">{listing.description}</p>
             </div>
             <div className="text-right shrink-0">
               <div className="text-gray-400 text">Batch ID</div>
@@ -578,7 +582,7 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className={`grid ${viewMode === 'list' ? 'grid-cols-4' : 'grid-cols-2'} gap-4 mt-4 h-24`}>
             <div>
               <div className="text-gray-400 text">Seller</div>
               <button
@@ -588,10 +592,10 @@ export default function MarketplacePage() {
                 }}
                 className="text-white font-mono text-sm bg-gray-700/50 px-2 py-1 rounded hover:bg-blue-600/50 transition-colors"
               >
-                {listing.owner.toString()}
+                {`${listing.owner.slice(0, 8)}...${listing.owner.slice(-6)}`}
               </button>
             </div>
-            <div className="text-right">
+            <div className={viewMode === 'list' ? '' : 'text-right'}>
               <div className="text-gray-400 text">Price per unit</div>
               <p className="text-white font-semibold text-base">
                 ${(Number(listing.unitPrice) / 1e18).toFixed(2)}
@@ -603,7 +607,7 @@ export default function MarketplacePage() {
                 {listing.category}
               </p>
             </div>
-            <div className="text-right">
+            <div className={viewMode === 'list' ? '' : 'text-right'}>
               <p className="text-gray-400 text">Available Quantity</p>
               <p className="text-white font-semibold text-base">
                 {listing.totalQuantity.toString()}
@@ -611,22 +615,29 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-center gap-6">
-              <div className="w-1/4"></div>
-              <input
-                type="number"
-                min="1"
-                max={listing.totalQuantity.toString()}
-                value={requestQuantities[listing.batchId.toString()] || ''}
-                onChange={(e) => handleQuantityChange(listing, e)}
-                placeholder="Enter quantity"
-                className="w-56 bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+          <div className={`space-y-2 ${viewMode === 'list' ? 'flex flex-wrap items-center gap-4' : 'h-20 flex flex-col justify-end'}`}>
+            <div className={`${viewMode === 'list' ? 'flex items-center gap-4 flex-1' : 'flex justify-center gap-6'}`}>
+              <div className={viewMode === 'list' ? 'w-auto' : 'w-1/4'}></div>
+              <div className="relative w-full">
+                {requestQuantities[listing.batchId.toString()] && (
+                  <div className="absolute -top-6 left-0 text-gray-400 text-sm justify-center">
+                    Total: ${(Number(listing.unitPrice) * Number(requestQuantities[listing.batchId.toString()]) / 1e18).toFixed(2)}
+                  </div>
+                )}
+                <input
+                  type="number"
+                  min="1"
+                  max={listing.totalQuantity.toString()}
+                  value={requestQuantities[listing.batchId.toString()] || ''}
+                  onChange={(e) => handleQuantityChange(listing, e)}
+                  placeholder="Enter quantity"
+                  className={`${viewMode === 'list' ? 'w-48' : 'w-full'} bg-gray-800/50 border border-gray-700/50 rounded-lg px-3 py-2 text focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
               <button
                 onClick={() => handleRequestProducts(listing)}
                 disabled={!requestQuantities[listing.batchId.toString()] || isRequesting}
-                className={`w-56 rounded-lg text font-semibold transition-all duration-300 flex items-center justify-center px-3 py-2 ${
+                className={`${viewMode === 'list' ? 'flex-1 max-w-xs' : 'w-80'} rounded-lg text font-semibold transition-all duration-300 flex items-center justify-center px-3 py-2 ${
                   !requestQuantities[listing.batchId.toString()] || isRequesting
                     ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
@@ -641,14 +652,8 @@ export default function MarketplacePage() {
                   'Request'
                 )}
               </button>
-              <div className="w-1/4"></div>
+              <div className={viewMode === 'list' ? 'w-auto' : 'w-1/4'}></div>
             </div>
-
-            {requestQuantities[listing.batchId.toString()] && (
-              <div className="text-right text-gray-400 text-sm">
-                Total: ${(Number(listing.unitPrice) * Number(requestQuantities[listing.batchId.toString()]) / 1e18).toFixed(2)}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -672,7 +677,7 @@ export default function MarketplacePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col space-y-6">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 mb-4">
             <h1 className="text-4xl font-bold font-['Space_Grotesk'] text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
               Marketplace
             </h1>
@@ -695,27 +700,59 @@ export default function MarketplacePage() {
             </div>
           </div>
 
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setActiveTab('verified')}
-              className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-                activeTab === 'verified'
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-              }`}
-            >
-              Verified Manufacturers
-            </button>
-            <button
-              onClick={() => setActiveTab('other')}
-              className={`px-6 py-2 rounded-xl transition-all duration-300 ${
-                activeTab === 'other'
-                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                  : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
-              }`}
-            >
-              Other Sellers
-            </button>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0">
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setActiveTab('verified')}
+                className={`px-6 py-2 rounded-xl transition-all duration-300 ${
+                  activeTab === 'verified'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                }`}
+              >
+                Verified Manufacturers
+              </button>
+              <button
+                onClick={() => setActiveTab('other')}
+                className={`px-6 py-2 rounded-xl transition-all duration-300 ${
+                  activeTab === 'other'
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
+                    : 'bg-gray-800/50 text-gray-400 hover:bg-gray-700/50'
+                }`}
+              >
+                Other Sellers
+              </button>
+            </div>
+            
+            {/* <div className="flex items-center bg-gray-800/50 border border-gray-700/30 rounded-lg p-1">
+              <span className="text-gray-400 mr-2 pl-2">View:</span>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded transition-all duration-300 ${
+                  viewMode === 'grid'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                }`}
+                aria-label="Grid View"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded transition-all duration-300 ${
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                }`}
+                aria-label="List View"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </button>
+            </div> */}
           </div>
 
           {/* Listings Grid */}
@@ -724,7 +761,12 @@ export default function MarketplacePage() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
             </div>
           ) : filteredListings.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className={`
+              ${viewMode === 'grid' 
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' 
+                : 'flex flex-col space-y-6'
+              }
+            `}>
               {filteredListings.map(renderListing)}
             </div>
           ) : (
