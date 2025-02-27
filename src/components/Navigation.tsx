@@ -63,7 +63,7 @@ export default function Navigation() {
                 height={32}
                 className="transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
+              <span className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-wider transition-colors duration-300 group-hover:text-blue-400">
                 NexTrack
               </span>
             </Link>
@@ -79,7 +79,7 @@ export default function Navigation() {
                     <>
                       <Link
                         href="/app/my-batches"
-                        className={`text-lg font-medium transition-all duration-300 group ${
+                        className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                           pathname === '/app/my-batches' 
                             ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                             : 'text-gray-300 hover:text-white'
@@ -91,7 +91,7 @@ export default function Navigation() {
                       </Link>
                       <Link
                         href="/app/requests"
-                        className={`text-lg font-medium transition-all duration-300 group ${
+                        className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                           pathname === '/app/requests' 
                             ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                             : 'text-gray-300 hover:text-white'
@@ -104,7 +104,7 @@ export default function Navigation() {
                       {isManufacturer ? (
                         <Link
                           href="/app/register-batch"
-                          className={`text-lg font-medium transition-all duration-300 group ${
+                          className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                             pathname === '/app/register-batch' 
                               ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                               : 'text-gray-300 hover:text-white'
@@ -117,7 +117,7 @@ export default function Navigation() {
                       ) : (
                         <Link
                           href="/app/orders"
-                          className={`text-lg font-medium transition-all duration-300 group ${
+                          className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                             pathname === '/app/orders' 
                               ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                               : 'text-gray-300 hover:text-white'
@@ -132,7 +132,7 @@ export default function Navigation() {
                   ) : null}
                   <Link
                     href="/app/marketplace"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                       pathname === '/app/marketplace' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -144,7 +144,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/dao"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                       pathname.startsWith('/dao')
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -199,7 +199,7 @@ export default function Navigation() {
                 <div className="flex items-center space-x-6">
                 <Link
                     href="/dao"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                       pathname.startsWith('/dao')
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -211,7 +211,7 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/features"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                       pathname === '/features' 
                         ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
@@ -223,9 +223,9 @@ export default function Navigation() {
                   </Link>
                   <Link
                     href="/about"
-                    className={`text-lg font-medium transition-all duration-300 group ${
+                    className={`text-base sm:text-lg lg:text-xl font-medium transition-all duration-300 group ${
                       pathname === '/about' 
-                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-500 font-semibold' 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 font-semibold' 
                         : 'text-gray-300 hover:text-white'
                     }`}
                   >
