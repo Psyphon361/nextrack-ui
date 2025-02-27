@@ -5,7 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --scale-factor: 1.1;
+  --scale-factor: 1;
   font-size: 16px;
 }
 
@@ -27,60 +27,48 @@
 
 @media screen and (min-width: 1920px) and (max-width: 2559px) {
   :root {
-    --scale-factor: 0.9;
-    font-size: 14px;
+    --scale-factor: 0.95;
+    font-size: 15px;
   }
 }
 
 /* 1080p specific scaling */
 @media screen and (max-width: 1919px) {
+  :root {
+    --scale-factor: 0.85;
+    font-size: 14px;
+  }
+  
   .container {
     max-width: 1366px !important;
-    transform: scale(0.75);
-    transform-origin: top center !important;
     margin: 0 auto !important;
   }
+}
 
-  /* Navbar specific styles for 1080p */
-  nav {
-    height: 4rem !important;
-    display: flex !important;
-    align-items: center !important;
+/* Small screen adjustments */
+@media screen and (max-width: 1366px) {
+  :root {
+    --scale-factor: 0.8;
+    font-size: 14px;
   }
-
-  nav .container {
-    height: 100% !important;
-    transform: scale(0.75) !important;
-    transform-origin: top center !important;
-    margin: 0 auto !important;
-    margin-top: 1rem !important;
-    max-width: 1366px !important;
+  
+  .container {
+    max-width: 1024px !important;
+    width: 95% !important;
   }
+}
 
-  nav .container > div {
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    transform-origin: top center !important;
+/* Mobile adjustments */
+@media screen and (max-width: 640px) {
+  :root {
+    --scale-factor: 0.75;
+    font-size: 14px;
   }
-
-  nav .text-xl {
-    font-size: 1.1rem !important;
-  }
-
-  /* Logo text size */
-  nav .group span.text-xl {
-    font-size: 1.5rem !important;
-  }
-
-  nav [class*="rounded-2xl"] {
-    font-size: 1rem !important;
-    padding: 0.5rem 1rem !important;
-  }
-
-  nav [class*="rounded-full"] {
-    width: 0.75rem !important;
-    height: 0.75rem !important;
+  
+  .container {
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 

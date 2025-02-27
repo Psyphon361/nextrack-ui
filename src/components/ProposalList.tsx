@@ -68,7 +68,7 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
           <p className="text-gray-400">No proposals found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {sortedProposals.map((proposal, index) => {
             const { label, className } = getProposalStateLabel(proposal.state);
 
@@ -91,11 +91,13 @@ const ProposalList = ({ proposals, isLoading }: ProposalListProps) => {
                         borderRadius: '10px',
                       },
                     }))}
-                    className="px-3 py-1 bg-gray-900/90 rounded-full text-sm font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
+                    className="px-2.5 py-0.5 bg-gray-900/90 rounded-full text-sm font-semibold text-gray-400 border border-gray-700 hover:bg-gray-800/90 hover:text-gray-300 transition-colors duration-200 cursor-pointer group flex items-center space-x-1"
                   >
-                    <span>#{proposal.id}</span>
+                    <div className="max-w-[150px] sm:max-w-[180px] md:max-w-[200px] lg:max-w-none overflow-hidden">
+                      <span className="block truncate lg:text-clip">#{proposal.id}</span>
+                    </div>
                     <svg
-                      className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

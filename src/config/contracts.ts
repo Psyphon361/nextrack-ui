@@ -1,5 +1,5 @@
 export const ELECTRONEUM_TESTNET_CONFIG = {
-  chainId: '0x4F5E0C', // Electroneum testnet chain ID (5201420 in decimal)
+  chainId: process.env.NEXT_PUBLIC_CHAIN_ID || '0x4F5E0C', // Electroneum testnet chain ID (5201420 in decimal)
   chainName: 'Electroneum Testnet',
   rpcUrls: [process.env.NEXT_PUBLIC_RPC_URL || 'https://rpc.ankr.com/electroneum_testnet/15266e093685caca47b9a524ba83c22259a0590c105a2b4c5c5b2a7c2d0c7f0c'],
   nativeCurrency: {

@@ -685,7 +685,7 @@ export default function ProposalDetails() {
                             },
                           });
                         }}
-                        className="text-lg px-5 py-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 font-semibold cursor-pointer hover:bg-blue-500/20 transition-all duration-300"
+                        className="text-base md:text-lg px-3 md:px-5 py-1.5 md:py-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 font-semibold cursor-pointer hover:bg-blue-500/20 transition-all duration-300 inline-block max-w-[120px] md:max-w-full truncate"
                       >
                         #{proposal.id}
                       </span>

@@ -131,10 +131,10 @@ const DAOPage = () => {
         {/* Tabs Navigation */}
         <div className="border-b border-gray-700/50 mb-8">
           <nav className="flex justify-between items-center">
-            <div className="flex space-x-8 overflow-x-auto pb-2">
+            <div className="flex space-x-4 md:space-x-8 overflow-x-auto pb-2">
               <button
                 onClick={() => setActiveTab("all")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "all"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -144,7 +144,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("pending")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "pending"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -154,7 +154,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("active")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "active"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -164,7 +164,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("succeeded")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "succeeded"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -174,7 +174,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("queued")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "queued"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -184,7 +184,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("executed")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "executed"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -194,7 +194,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("defeated")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "defeated"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -204,7 +204,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("expired")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "expired"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
@@ -214,7 +214,7 @@ const DAOPage = () => {
               </button>
               <button
                 onClick={() => setActiveTab("canceled")}
-                className={`py-4 px-1 border-b-2 font-semibold text-lg whitespace-nowrap ${
+                className={`py-4 px-1 border-b-2 font-semibold text-base md:text-lg whitespace-nowrap ${
                   activeTab === "canceled"
                     ? "border-blue-500 text-blue-400"
                     : "border-transparent text-gray-400 hover:text-gray-300"
