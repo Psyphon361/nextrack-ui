@@ -1,7 +1,7 @@
 export const ELECTRONEUM_TESTNET_CONFIG = {
-  chainId: process.env.NEXT_PUBLIC_CHAIN_ID || '0x4F5E0C', // Electroneum testnet chain ID (5201420 in decimal)
-  chainName: 'Electroneum Testnet',
-  rpcUrls: [process.env.NEXT_PUBLIC_RPC_URL || 'https://rpc.ankr.com/electroneum_testnet/15266e093685caca47b9a524ba83c22259a0590c105a2b4c5c5b2a7c2d0c7f0c'],
+  chainId: process.env.NEXT_PUBLIC_CHAIN_ID || '0xCB2E', // Electroneum testnet chain ID (5201420 in decimal)
+  chainName: 'Electroneum Mainnet',
+  rpcUrls: [process.env.NEXT_PUBLIC_RPC_URL || 'https://rpc.ankr.com/electroneum/a181a97036d9a4dbb405f6823daaa742604726d402fd899d67054124d80d78fa'],
   nativeCurrency: {
     name: 'ETN',
     symbol: 'ETN',
@@ -11,7 +11,7 @@ export const ELECTRONEUM_TESTNET_CONFIG = {
 };
 
 export const CONTRACT_ADDRESSES = {
-  NEXTRACK: '0xCE4F858Fb32Ce77309519f4687836BcbA5Ad301d',
+  NEXTRACK: (process.env.NEXT_PUBLIC_NEXTRACK_ADDRESS) as `0x${string}`,
 } as const;
 
 export const CONTRACT_ABIS = {

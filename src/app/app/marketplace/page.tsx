@@ -15,8 +15,8 @@ import Image from 'next/image';
 const provider = new ethers.JsonRpcProvider(ELECTRONEUM_TESTNET_CONFIG.rpcUrls[0]);
 
 // Contract addresses
-const VAULT_ADDRESS = '0x59D467bD367A92b973Df0D6E3Da2b3f0Ad6546e7';
-const MUSDT_ADDRESS = '0xD7eAaa515F1a3cF0Cbf24a8Ed283489E93442E58';
+const VAULT_ADDRESS = process.env.NEXT_PUBLIC_VAULT_ADDRESS as `0x${string}`;
+const MUSDT_ADDRESS = process.env.NEXT_PUBLIC_MUSDT_ADDRESS as `0x${string}`;
 
 // Create contract instances
 const contract = new ethers.Contract(

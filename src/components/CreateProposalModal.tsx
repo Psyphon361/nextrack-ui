@@ -11,8 +11,8 @@ interface CreateProposalModalProps {
   onClose: () => void;
 }
 
-const GOVERNOR_ADDRESS = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801';
-const NEXTRACK_ADDRESS = '0xCE4F858Fb32Ce77309519f4687836BcbA5Ad301d';
+const GOVERNOR_ADDRESS = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS) as `0x${string}`;
+const NEXTRACK_ADDRESS = (process.env.NEXT_PUBLIC_NEXTRACK_ADDRESS) as `0x${string}`;
 
 // ABI for contract functions
 const nexTrackABI = [{

@@ -2,10 +2,9 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 import { ProposalState } from '@/types/dao';
 
-const GOVERNOR_ADDRESS = '0xD384A3471F1c22b9b578f2fc35d8Ca854AEb6801';
+const GOVERNOR_ADDRESS = (process.env.NEXT_PUBLIC_GOVERNOR_ADDRESS) as `0x${string}`;
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
 const BLOCK_TIME = 5; // Electroneum block time in seconds
-const DEBOUNCE_TIME = 2000; // 2 seconds debounce for refreshing
 
 export interface Proposal {
   id: string;
