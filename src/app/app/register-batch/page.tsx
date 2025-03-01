@@ -175,7 +175,7 @@ export default function RegisterBatchPage() {
         imageUrl: '',
       });
       
-      toast.success(`Product batch registered successfully! Batch ID: ${decodedBatchId}`, {
+      toast.success('Product Registration Successful!', {
         id: toastId,
         duration: 5000,
         style: {

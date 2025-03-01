@@ -71,33 +71,6 @@ const getStateColor = (state: ProposalState) => {
   }
 };
 
-const getStateIcon = (state: ProposalState) => {
-  switch (state) {
-    case ProposalState.Succeeded:
-    case ProposalState.Queued:
-    case ProposalState.Executed:
-      return (
-        <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-        </svg>
-      );
-    // case ProposalState.Defeated:
-    //   return (
-    //     <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    //       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    //     </svg>
-    //   );
-    case ProposalState.Active:
-      return (
-        <div className="w-5 h-5 rounded-full border-2 border-blue-500 bg-blue-500/20"></div>
-      );
-    default:
-      return (
-        <div className="w-5 h-5 rounded-full border-2 border-gray-600"></div>
-      );
-  }
-};
-
 // Helper function to safely format dates
 const formatTimestamp = (timestamp: string | number | undefined): string => {
   if (!timestamp) return 'N/A';
@@ -238,22 +211,6 @@ function VoteStats({ forVotes, againstVotes, abstainVotes }: {
   );
 }
 
-// Helper function to get the next state based on current state
-const getNextState = (currentState: ProposalState) => {
-  switch (currentState) {
-    case ProposalState.Pending:
-      return ProposalState.Active;
-    case ProposalState.Active:
-      return ProposalState.Succeeded;
-    case ProposalState.Succeeded:
-      return ProposalState.Queued;
-    case ProposalState.Queued:
-      return ProposalState.Executed;
-    default:
-      return null;
-  }
-};
-
 // Helper function to get state label
 const getStateLabel = (state: ProposalState) => {
   switch (state) {
@@ -330,48 +287,6 @@ interface Proposal {
   voteEnd: number;
 }
 
-function VotingEndDisplay({ state, voteEnd }: { state: number; voteEnd: number | string }) {
-  const [status, setStatus] = useState('');
-
-  useEffect(() => {
-    // If not Active or Pending, voting has ended
-    if (state > ProposalState.Active) {
-      setStatus('Ended');
-      return;
-    }
-
-    const timestampNum = typeof voteEnd === 'string' ? Number(voteEnd) : voteEnd;
-    const now = Math.floor(Date.now() / 1000);
-
-    if (timestampNum <= now) {
-      setStatus('Ended');
-      return;
-    }
-
-    const timer = setInterval(() => {
-      const now = Math.floor(Date.now() / 1000);
-      const difference = timestampNum - now;
-
-      if (difference <= 0) {
-        setStatus('Ended');
-        clearInterval(timer);
-      } else {
-        const days = Math.floor(difference / (24 * 60 * 60));
-        const hours = Math.floor((difference % (24 * 60 * 60)) / (60 * 60));
-        const minutes = Math.floor((difference % (60 * 60)) / 60);
-
-        setStatus(
-          `${days > 0 ? `${days}d ` : ''}${hours > 0 ? `${hours}h ` : ''}${minutes}m`
-        );
-      }
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [state, voteEnd]);
-
-  return <span className="font-mono">{status}</span>;
-}
-
 const proposalSteps = [
   { state: 0, label: 'Created', color: 'blue' },
   { state: 1, label: 'Active', color: 'green' },
@@ -382,7 +297,7 @@ const proposalSteps = [
 
 const getProgressBarWidth = (currentState: number) => {
   // For defeated or expired proposals, show progress up to that state
-  if (currentState === 3 || currentState === 2) {
+  if (currentState === 3 || currentState === 2 || currentState === 7) {
     return '100%'; // Fully reach the defeated/expired state
   }
   
