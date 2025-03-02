@@ -38,6 +38,13 @@ yarn install
 3. Create a `.env.local` file in the root directory with the following variables:
 ```env
 NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt_token
+NEXT_PUBLIC_RPC_URL=your_chain_rpc_url
+NEXT_PUBLIC_CHAIN_ID=your_chain_id
+NEXT_PUBLIC_NEXTRACK_ADDRESS=nextrack_contract_address
+NEXT_PUBLIC_GOVERNOR_ADDRESS=governor_contract_address
+NEXT_PUBLIC_GOVTOKEN_ADDRESS=govtoken_contract_address
+NEXT_PUBLIC_MUSDT_ADDRESS=musdt_contract_address
+NEXT_PUBLIC_VAULT_ADDRESS=vault_contract_address
 ```
 
 > **Important**: You'll need to obtain a JWT token from your Pinata dashboard. This is required for IPFS file storage functionality. You can create free account at [Pinata](https://www.pinata.cloud/).
