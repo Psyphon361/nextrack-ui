@@ -226,7 +226,7 @@ export default function AppPage() {
                   <h3 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">Browse Marketplace</h3>
                 </div>
                 <p className="text-gray-400 text-lg leading-relaxed">
-                  Explore and purchase verified products directly from manufacturers. Ensure authenticity and track provenance.
+                  Explore & purchase products directly from manufacturers. Ensure authenticity & track provenance.
                 </p>
               </div>
             </Link>
