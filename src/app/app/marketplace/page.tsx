@@ -55,6 +55,23 @@ const Category = {
   9: 'Other'
 } as const;
 
+const ExternalLinkIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="w-5 h-5 ml-1 inline-block text-blue-400" // Added text-blue-400
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+    />
+  </svg>
+);
+
 type CategoryType = typeof Category[keyof typeof Category];
 
 type VerificationType = 'verified' | 'unverified' | 'pending';
@@ -682,10 +699,22 @@ export default function MarketplacePage() {
               Marketplace
             </h1>
 
-            <div className="bg-gray-800/50 border border-gray-700/30 rounded-xl px-4 py-2">
-              <span className="text-gray-400">Balances:</span>
-              <span className="text-white ml-2">{userBalances.mUSDT} mUSDT</span>
-              <span className="text-white ml-4">{userBalances.ETN} ETN</span>
+            <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
+              <div className="bg-gray-800/50 border border-gray-700/30 rounded-xl px-4 py-2">
+                <span className="text-gray-400">Balances:</span>
+                <span className="text-white ml-2">{userBalances.mUSDT} mUSDT</span>
+                <span className="text-white ml-4">{userBalances.ETN} ETN</span>
+              </div>
+
+              <a
+                href="https://musdt-faucet.vercel.app/" // Replace with your actual faucet URL
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold font-['Space_Grotesk'] text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 border-2 border-blue-500/50 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 rounded-lg px-4 py-2 flex items-center"
+              >
+                Get FREE mUSDT to Try it Out!
+                <ExternalLinkIcon />
+              </a>
             </div>
             
             <div className="relative">
