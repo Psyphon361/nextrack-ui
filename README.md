@@ -71,6 +71,12 @@ yarn build
 yarn start
 ```
 
+## 🌐 Try NexTrack Live
+
+Want to experience NexTrack in action? You can try the live demo hosted at [NexTrack](https://nextrack-ui.vercel.app/) on the Electroneum Mainnet. Explore the decentralized supply chain tracking features and see the Web3 integration for yourself!
+
+To help you get started, I’ve also hosted an Electroneum mainnet faucet at [Faucet](https://electroneum-faucet.vercel.app/). This faucet provides 0.5 ETN and 10,000 mUSDT (mock USDT) so you can test the dapp without needing your own funds. Simply visit the faucet, enter your wallet address, and claim your tokens!
+
 ## 🏗️ Project Structure
 
 - `/src/app` - Next.js application routes and pages
@@ -89,7 +95,7 @@ yarn start
 
 ## 🤝 Contributing
 
-This project was created for a hackathon, but contributions are welcome! Please feel free to submit issues and pull requests.
+This project was created for [Electroneum Hackathon 2025](https://electroneum-hackathon-2025.devpost.com/), but contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## 📝 License
 
