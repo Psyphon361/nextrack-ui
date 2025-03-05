@@ -712,7 +712,7 @@ export default function MarketplacePage() {
                 rel="noopener noreferrer"
                 className="font-bold font-['Space_Grotesk'] text-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 border-2 border-blue-500/50 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 rounded-lg px-4 py-2 flex items-center"
               >
-                Get FREE mUSDT to Try it Out!
+                Free ETN + mUSDT Faucet!
                 <ExternalLinkIcon />
               </a>
             </div>
